@@ -1,0 +1,380 @@
+/* Estilos para las tarjetas de canchas */
+.card {
+  transition: all 0.3s ease;
+}
+
+
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.card:hover .card-img-top {
+  transform: scale(1.03);
+}
+
+.btn-ver-horarios {
+  padding: 0.6rem 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  color: #495057;
+  border-top: none;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+.btn-horario {
+  min-width: 90px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+}
+
+.modal-title {
+  color: #198754;
+  font-weight: 600;
+}
+
+tbody tr:hover {
+  background-color: rgba(25, 135, 84, 0.03);
+}
+.card-body {
+  padding: 1.25rem;
+}
+
+.precio-seccion {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border-left: 3px solid #198754;
+  transition: all 0.3s ease;
+}
+
+.card:hover .precio-seccion {
+  background-color: #f1f8ff;
+  transform: translateX(3px);
+}
+
+.precio-monto {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #198754;
+  line-height: 1.2;
+}
+
+.precio-texto {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem 1.5rem;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  border-top: none;
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+}
+
+.btn {
+  transition: all 0.2s ease;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn i {
+  margin-right: 0.5rem;
+}
+
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.btn-success:hover {
+  background-color: #157347;
+  border-color: #146c43;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2);
+}
+
+.btn-outline-secondary {
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  transform: translateY(-1px);
+}
+
+
+.football-banner {
+  position: relative;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), 
+              url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding: 120px 0;
+  color: white;
+  text-align: center;
+  overflow: hidden;
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.field-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(92, 151, 55, 0.2) 0%, 
+    rgba(33, 136, 56, 0.3) 100%);
+  z-index: 1;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.banner-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.title-text {
+  position: relative;
+  display: inline-block;
+}
+
+.title-text::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: var(--secondary);
+  border-radius: 2px;
+}
+
+.football-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border-radius: 50%;
+  color: var(--gradient-primary);
+  font-size: 2.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: bounce 2s infinite;
+  flex-shrink: 0;
+  margin: 0 0.5rem;
+}
+
+.banner-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  opacity: 0.9;
+  animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@media (max-width: 992px) {
+  .banner-title {
+    font-size: 2.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .football-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+    margin: 0.5rem 0;
+  }
+  
+  .banner-subtitle {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .football-banner {
+    padding: 60px 0;
+  }
+  
+  .banner-title {
+    font-size: 2.2rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .title-text {
+    flex: 0 0 100%;
+    text-align: center;
+  }
+  
+  .title-text::after {
+    bottom: -8px;
+  }
+  
+  .football-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.75rem;
+    margin: 0.5rem 0;
+    order: 1;
+  }
+  
+  .banner-subtitle {
+    font-size: 1.1rem;
+    padding: 0 1rem;
+    margin-top: 1rem;
+    flex: 0 0 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .banner-title {
+    font-size: 2rem;
+  }
+  
+  .football-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .banner-subtitle {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .banner-title {
+    font-size: 1.8rem;
+  }
+  
+  .football-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+  }
+  
+  .banner-subtitle {
+    font-size: 0.95rem;
+  }
+}

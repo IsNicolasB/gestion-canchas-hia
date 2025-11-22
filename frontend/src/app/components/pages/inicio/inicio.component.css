@@ -1,0 +1,269 @@
+/* Estilos para la sección hero */
+.hero {
+  background-image: url('/assets/herov9.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.hero h1 {
+    font-family: "Gantari", sans-serif;
+  font-size: 4rem;
+  font-weight: 400;
+  letter-spacing: 2px;
+  line-height: 1.2;
+  text-shadow: 5px 5px 7px rgba(0, 0, 0, 0.466);
+}
+.hero h2 {
+    font-family: "Rubik Vinyl", system-ui;
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  background:  linear-gradient(135deg, #157347 0%, #dbdb13 100%);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+  font-size: 1.5rem;
+  opacity: 0.9;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  text-shadow: 5px 5px 7px rgba(0, 0, 0, 0.466);
+}
+
+.hero .btn {
+  transition: all 0.3s ease;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hero .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Ajustes responsivos generales */
+@media (max-width: 992px) {
+  .hero h1 {
+    font-size: 2.8rem;
+  }
+  
+  .hero h2 {
+    font-size: 2.5rem;
+  }
+  
+  .hero p {
+    font-size: 1.3rem;
+  }
+}
+
+
+/* Estilos para la sección de estadísticas */
+.counter-item {
+  background-color: #f8f9fa;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.14);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.counter-item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.counter-number {
+  font-family: 'Gantari', sans-serif;
+  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  color: var(--green);
+}
+
+.counter-number::after {
+  content: '+';
+  display: inline-block;
+  margin-left: 2px;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.counter-number[data-target="4.9"]::after {
+  content: '';
+}
+
+.counter-label {
+  font-size: 1.1rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+/* Animación de los contadores */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter-item {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.counter-item:nth-child(1) { animation-delay: 0.1s; }
+.counter-item:nth-child(2) { animation-delay: 0.2s; }
+.counter-item:nth-child(3) { animation-delay: 0.3s; }
+.counter-item:nth-child(4) { animation-delay: 0.4s; }
+
+/* Ajustes responsivos para la sección de estadísticas */
+@media (max-width: 768px) {
+  .counter-item {
+    margin-bottom: 1.5rem;
+  }
+  
+  .counter-number {
+    font-size: 2.5rem;
+  }
+  
+  .counter-label {
+    font-size: 1rem;
+  }
+}
+
+/* Estilos para la sección "¿Cómo reservar?" */
+#como-reservar {
+  background-color: #f8f9fa;
+  position: relative;
+  overflow: hidden;
+}
+
+#como-reservar .card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#como-reservar .card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+#como-reservar .step-number {
+  width: 40px;
+  height: 40px;
+  background: var(--gradient-primary);
+  color: var(--text-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin: 0 auto 1rem;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2);
+}
+
+#como-reservar .fa-3x {
+  color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+#como-reservar .card:hover .fa-3x {
+  transform: scale(1.1);
+}
+
+/* Animación para las tarjetas */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#como-reservar .card {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+#como-reservar .card:nth-child(1) { animation-delay: 0.1s; }
+#como-reservar .card:nth-child(2) { animation-delay: 0.2s; }
+#como-reservar .card:nth-child(3) { animation-delay: 0.3s; }
+#como-reservar .card:nth-child(4) { animation-delay: 0.4s; }
+#como-reservar .card:nth-child(5) { animation-delay: 0.5s; }
+#como-reservar .card:nth-child(6) { animation-delay: 0.6s; }
+#como-reservar .card:nth-child(7) { animation-delay: 0.7s; }
+
+/* Botón de reservar */
+#como-reservar .btn-success {
+  padding: 12px 30px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(25, 135, 84, 0.2);
+}
+
+#como-reservar .btn-success:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(25, 135, 84, 0.3);
+}
+
+/* Ajustes responsivos */
+@media (max-width: 992px) {
+  #como-reservar .card {
+    margin-bottom: 1.5rem;
+  }
+  
+  #como-reservar .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+  
+  #como-reservar .fa-3x {
+    font-size: 2.5em;
+  }
+}
+
+@media (max-width: 768px) {
+  #como-reservar {
+    padding: 3rem 0;
+  }
+  
+  #como-reservar .card {
+    margin-bottom: 1.5rem;
+  }
+  
+  #como-reservar h2 {
+    font-size: 2rem;
+  }
+  
+  #como-reservar .btn-lg {
+    padding: 10px 25px;
+    font-size: 1rem;
+  }
+}
+
+.fas, .far {
+  vertical-align: middle;
+}

@@ -1,0 +1,117 @@
+/* Estilos generales */
+.card {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.12);
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    border-bottom: none;
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .card-header h4, .card-header h5 {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+  
+  /* Estilos para formulario */
+  .form-label {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control,
+  .form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+  }
+  
+  .form-control:focus,
+  .form-select:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+  }
+  
+  .input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #198754;
+    transition: all 0.2s;
+  }
+  
+  /* Botones */
+  .btn {
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-success {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    border: none;
+  }
+  
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(25, 135, 84, 0.3);
+  }
+  
+  .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    color: #6c757d;
+  }
+  
+  /* Estilos para los iconos */
+  i.fas, i.far {
+    width: 1.25em;
+    text-align: center;
+  }
+  
+  /* Estilos para la sección de detalles */
+  .reserva-details {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Responsive */
+  @media (max-width: 767.98px) {
+    .card {
+      border-radius: 0;
+      margin: 0 -1rem 1.5rem;
+      box-shadow: none;
+    }
+    
+    .card-header {
+      border-radius: 0;
+    }
+    
+    .btn {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.justify-content-end {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }

@@ -1,0 +1,94 @@
+<div class="profile-container py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-10 col-lg-8">
+        <div class="card profile-card shadow-lg border-0 rounded-4 overflow-hidden">
+
+          <div class="profile-header text-center py-4 position-relative">
+            <div class="position-relative d-inline-block">
+              <img 
+                [src]="usuario?.avatarUrl || 'https://ui-avatars.com/api/?name=' + usuario?.nombre + '+' + usuario?.apellido + '&background=4ecca3&color=fff&size=256'" class="profile-avatar shadow" alt="Avatar del usuario"
+              >
+              <button class="btn btn-light btn-circle position-absolute bottom-0 end-0" (click)="cambiarFoto()" title="Cambiar foto de perfil">
+                <i class="fas fa-camera text-success"></i>
+              </button>
+            </div>
+            <h3 class="mt-3 mb-0 text-white">{{ usuario?.nombre }} {{ usuario?.apellido }}</h3>
+            <p class="text-white-50 mb-0">Mi perfil</p>
+          </div>
+          
+          <!-- Perfil -->
+          <div class="card-body p-4">
+            <form [formGroup]="perfilForm" (ngSubmit)="guardar()" [class.was-validated]="perfilForm.touched" novalidate>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="nombre" class="form-label fw-semibold">Nombre</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="fas fa-user text-muted"></i></span>
+                      <input id="nombre" type="text" class="form-control" formControlName="nombre" [readonly]="!editar" [class.bg-light]="!editar" required>
+                    </div>
+                    <div class="invalid-feedback">Por favor ingresa tu nombre</div>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="apellido" class="form-label fw-semibold">Apellido</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="fas fa-user text-muted"></i></span>
+                      <input id="apellido" type="text" class="form-control" formControlName="apellido" [readonly]="!editar" [class.bg-light]="!editar" required>
+                    </div>
+                    <div class="invalid-feedback">Por favor ingresa tu apellido</div>
+                  </div>
+                </div>
+                
+                <div class="col-12">
+                  <div class="form-group">
+                    <label for="correo" class="form-label fw-semibold">Correo electrónico</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
+                      <input id="correo" type="email" class="form-control bg-light" formControlName="correo" readonly>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-12">
+                  <div class="form-group">
+                    <label for="telefono" class="form-label fw-semibold">Teléfono</label>
+                    <div class="input-group">
+                      <span class="input-group-text bg-light"><i class="fas fa-phone text-muted"></i></span>
+                      <input id="telefono" type="text" class="form-control" formControlName="telefono" [readonly]="!editar" [class.bg-light]="!editar" placeholder="Ingresa tu número de teléfono">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                <button *ngIf="editar" type="submit" class="btn btn-success px-4 rounded-pill shadow-sm" [disabled]="perfilForm.invalid || !perfilForm.dirty">
+                  <i class="fas fa-save me-2"></i>Guardar cambios
+                </button>
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" (click)="editar =!editar">
+                  <i class="fas" [ngClass]="editar ? 'fa-times' : 'fa-edit'"></i> 
+                  {{ editar ? 'Cancelar' : 'Editar perfil' }}
+                </button>
+              </div>
+            </form>
+            
+            <div 
+              *ngIf="guardado" 
+              class="alert alert-success alert-dismissible fade show mt-4 shadow-sm"
+              role="alert"
+            >
+              <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2"></i>
+                <span>¡Tus cambios se han guardado correctamente!</span>
+              </div>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" (click)="guardado = false"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

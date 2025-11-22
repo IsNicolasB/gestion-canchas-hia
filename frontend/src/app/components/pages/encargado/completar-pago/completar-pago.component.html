@@ -1,0 +1,154 @@
+<div class="body-container">
+  <div class="container-fluid py-4">
+    <div class="row justify-content-center">
+      <div class="col-lg-10 col-sm-12">
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+          <div class="card-header bg-success text-white py-3">
+            <h4 class="mb-0">
+              <i class="fas fa-credit-card me-2"></i>Completar Pago
+            </h4>
+          </div>
+          <div class="card-body p-4">
+            <!-- Búsqueda por nombre de cliente -->
+            <div class="mb-4">
+              <h5 class="mb-3 d-flex align-items-center">
+                <i class="fas fa-search me-2 text-success"></i>Buscar Reservas por Cliente
+              </h5>
+              <div class="input-group mb-3">
+                <span class="input-group-text bg-light">
+                  <i class="fas fa-user text-success"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Ingrese el nombre del cliente" 
+                  [(ngModel)]="nombreCliente"
+                  (keyup.enter)="buscarReservas()"
+                >
+                <button class="btn btn-success" type="button" (click)="buscarReservas()" [disabled]="!nombreCliente.trim()">
+                  <i class="fas fa-search me-2"></i>Buscar
+                </button>
+              </div>
+              
+              <!-- Mensajes -->
+              <div *ngIf="mensaje" class="alert" 
+                   [ngClass]="{
+                     'alert-info': !mensaje.includes('error'),
+                     'alert-danger': mensaje.toLowerCase().includes('error')
+                   }">
+                {{ mensaje }}
+              </div>
+              
+              <div *ngIf="cargando" class="text-center my-3">
+                <div class="spinner-border text-success" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2">Buscando reservas...</p>
+              </div>
+            </div>
+
+            <!-- Lista de reservas -->
+            <div *ngIf="reservas.length > 0" class="mb-4">
+              <h5 class="mb-3">Reservas para hoy</h5>
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Hora</th>
+                      <th>Cancha</th>
+                      <th>Cliente</th>
+                      <th>Estado</th>
+                      <th>Total</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let reserva of reservas" 
+                        [class.table-active]="reservaSeleccionada?._id === reserva._id"
+                        style="cursor: pointer;"
+                        (click)="seleccionarReserva(reserva)">
+                      <td>{{ reserva.horaInicio }} - {{ reserva.horaFin }}</td>
+                      <td>{{ reserva.cancha?.nombre || 'N/A' }}</td>
+                      <td>{{ reserva.cliente?.nombre }} {{ reserva.cliente?.apellido }}</td>
+                      <td>
+                        <span class="badge" 
+                              [ngClass]="{
+                                'bg-success': reserva.pago?.estado === 'pagado',
+                                'bg-warning': reserva.pago?.estado === 'pendiente',
+                                'bg-danger': reserva.pago?.estado === 'cancelado'
+                              }">
+                          {{ reserva.pago?.estado || 'Pendiente' | titlecase }}
+                        </span>
+                      </td>
+                      <td>S/ {{ reserva.pago?.importeTotal || '0.00' }}</td>
+                      <td>
+                        <button *ngIf="reserva.pago?.estado === 'pendiente'" 
+                                class="btn btn-sm btn-success"
+                                (click)="$event.stopPropagation(); seleccionarReserva(reserva);">
+                          <i class="fas fa-check me-1"></i> Pagar
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Detalles del pago -->
+            <div *ngIf="reservaSeleccionada" class="card border-0 shadow-sm mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Detalles del Pago</h5>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <p><strong>Cancha:</strong> {{ reservaSeleccionada.cancha?.nombre }}</p>
+                    <p><strong>Fecha:</strong> {{ reservaSeleccionada.fecha | date:'fullDate' }}</p>
+                    <p><strong>Hora:</strong> {{ reservaSeleccionada.horaInicio }} - {{ reservaSeleccionada.horaFin }}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p><strong>Cliente:</strong> {{ reservaSeleccionada.cliente?.nombre }} {{ reservaSeleccionada.cliente?.apellido }}</p>
+                    <p><strong>Teléfono:</strong> {{ reservaSeleccionada.cliente?.telefono || 'N/A' }}</p>
+                  </div>
+                </div>
+                
+                <div class="row mb-3 border-top pt-3">
+                  <div class="col-6 fw-bold">Total a pagar:</div>
+                  <div class="col-6 text-end fw-bold">S/ {{ reservaSeleccionada.pago?.importeTotal || '0.00' }}</div>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-6 text-muted">Pagado:</div>
+                  <div class="col-6 text-end text-success">
+                    S/ {{ (reservaSeleccionada.pago?.importeTotal - (reservaSeleccionada.pago?.importePendiente || 0)).toFixed(2) }}
+                  </div>
+                </div>
+                <div class="row mb-3 border-top pt-2">
+                  <div class="col-6 fw-bold">Saldo pendiente:</div>
+                  <div class="col-6 text-end fw-bold" 
+                       [ngClass]="{'text-danger': reservaSeleccionada.pago?.importePendiente > 0}">
+                    S/ {{ (reservaSeleccionada.pago?.importePendiente || 0).toFixed(2) }}
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                  <button type="button" 
+                          class="btn btn-outline-secondary px-4"
+                          (click)="reservaSeleccionada = null">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                  </button>
+                  <button type="button" 
+                          class="btn btn-success px-4" 
+                          (click)="registrarPago()"
+                          [disabled]="!reservaSeleccionada?.pago?._id || reservaSeleccionada.pago.estado === 'pagado'">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ reservaSeleccionada.pago?.estado === 'pagado' ? 'Pago Completado' : 'Confirmar Pago' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

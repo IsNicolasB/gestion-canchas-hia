@@ -1,0 +1,169 @@
+<!-- Hero Section -->
+<section class="hero bg-success text-white py-5 py-lg-7">
+  <div class="container">
+    <div class="row align-items-center min-vh-75">
+      <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 texto fw-bold mb-2">Reservá en tan</h1> <h2 class="">solo 7 clicks</h2> 
+        <p class="lead mt-4 mb-5 fw-bold shadow-lg">Sin llamadas, sin complicaciones. Todo desde tu pantalla.</p>
+        <!-- Botón condicional según estado de autenticación -->
+        <a *ngIf="!isLoggedIn" 
+           [routerLink]="['/registrar-cliente']" 
+           class="btn btn-gradient text-white btn-lg px-5 py-3 fw-bold text-success">
+          <i class="fas fa-user-plus me-2"></i>Registrarse ahora
+        </a>
+        
+        <a *ngIf="isLoggedIn" 
+           [routerLink]="['/canchas']" 
+           class="btn btn-gradient text-white btn-lg px-5 py-3 fw-bold text-success">
+          <i class="fas fa-calendar-check me-2"></i>Reservar ya
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+ <!-- Sección de Cómo Reservar -->
+ <section id="como-reservar" class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-5 fw-bold text-primary2">¿Cómo reservar una cancha?</h2>
+      <p class="lead text-muted">Sigue estos sencillos pasos para asegurar tu cancha favorita</p>
+    </div>
+    
+    <div class="row g-4">
+      <!-- Paso 1 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">1</div>
+            <i class="fas fa-user-plus fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Regístrate</h4>
+            <p class="text-muted mb-0">Crea una cuenta en nuestra plataforma para acceder al sistema de reservas.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Paso 2 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">2</div>
+            <i class="fas fa-futbol fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Elige tu cancha</h4>
+            <p class="text-muted mb-0">Selecciona la cancha que prefieras de nuestro listado disponible.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Paso 3 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">3</div>
+            <i class="far fa-calendar-alt fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Selecciona fecha y duración</h4>
+            <p class="text-muted mb-0">Elige el día y cuánto tiempo necesitas la cancha.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Paso 4 -->
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">4</div>
+            <i class="far fa-clock fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Elige el horario</h4>
+            <p class="text-muted mb-0">Selecciona la hora de inicio que prefieras en nuestro calendario interactivo.</p>
+          </div>
+        </div>
+      </div>
+      <!-- Segunda fila de pasos -->
+      <div class="col-md-6 col-lg-3 offset-lg-1">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">5</div>
+            <i class="fas fa-clipboard-check fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Confirma tu reserva</h4>
+            <p class="text-muted mb-0">Revisa los detalles y confirma tu reserva.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">6</div>
+            <i class="fas fa-qrcode fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">Paga la seña</h4>
+            <p class="text-muted mb-0">Escanea el código QR para pagar el 30% de seña y asegurar tu reserva.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm hover-effect">
+          <div class="card-body text-center p-4">
+            <div class="step-number mb-3">7</div>
+            <i class="fas fa-check-circle fa-3x mb-3"></i>
+            <h4 class="h5 fw-bold">¡Listo!</h4>
+            <p class="text-muted mb-0">Podrás descargar un comprobante y tu cancha estará reservada.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Sección de Estadísticas -->
+<section class="py-5 ">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-primary2">¿Porqué elegirnos?</h2>
+            <p class="lead text-muted text-center">Más de 5 años brindando el mejor servicio de canchas deportivas en la ciudad</p>
+          </div>
+      <div class="row g-4 text-center">
+        <!-- Contador 1: Canchas -->
+        <div class="col-6 col-md-3">
+          <div class="counter-item p-4 rounded-3 h-100">
+            <div class="counter-number display-4 fw-bold mb-2" data-target="3">0</div>
+            <div class="counter-label">Canchas</div>
+            <i class="fas fa-futbol fa-2x text-muted mt-2"></i>
+          </div>
+        </div>
+        
+        <!-- Contador 2: Clientes Satisfechos -->
+        <div class="col-6 col-md-3">
+          <div class="counter-item p-4 rounded-3 h-100">
+            <div class="counter-number display-4 fw-bold mb-2" data-target="500">0</div>
+            <div class="counter-label">Clientes Satisfechos</div>
+            <i class="fas fa-users fa-2x text-muted mt-2"></i>
+          </div>
+        </div>
+        
+        <!-- Contador 3: Calificación -->
+        <div class="col-6 col-md-3">
+          <div class="counter-item p-4 rounded-3 h-100">
+            <div class="counter-number display-4 fw-bold mb-2" data-target="4.7">0</div>
+            <div class="counter-label">Calificación Promedio</div>
+            <div class="text-warning">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Contador 4: Reservas -->
+        <div class="col-6 col-md-3">
+          <div class="counter-item p-4 rounded-3 h-100">
+            <div class="counter-number display-4 fw-bold mb-2" data-target="100">0</div>
+            <div class="counter-label">Reservas Realizadas</div>
+            <i class="fas fa-calendar-check fa-2x text-muted mt-2"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>

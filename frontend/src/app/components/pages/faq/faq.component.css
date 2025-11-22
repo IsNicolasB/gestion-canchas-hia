@@ -1,0 +1,656 @@
+
+
+/* ============================================
+   1. RESET Y ESTILOS BASE
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+.accordion-button:focus {
+  box-shadow: none !important;
+  outline: none;
+}
+
+
+/* ============================================
+   2. LAYOUT PRINCIPAL
+   ============================================ */
+
+.faq-container {
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 3rem;
+  background: #f5f7fa;
+  position: relative;
+  overflow: hidden;
+}
+
+
+/* ============================================
+   3. HEADER
+   ============================================ */
+
+.faq-header {
+  width: calc(100% + 4rem);
+  margin: 0 -2rem 2rem;
+  padding: 4rem 2rem 3rem;
+  background: linear-gradient(135deg, #5C9737 0%, #37823F 100%);
+  color: white;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  clip-path: polygon(0 0, 100% 0, 100% 90%, 0% 100%);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faq-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.faq-title {
+  width: 100%;
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+  font-family: 'Gantari', sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: white;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.faq-subtitle {
+  max-width: 700px;
+  margin: 0.5rem auto 0;
+  padding: 0;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.faq-icon {
+  margin-left: 2rem;
+  font-size: 4.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+
+/* ============================================
+   4. CONTENIDO PRINCIPAL
+   ============================================ */
+
+.faq-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.faq-content:hover {
+  transform: translateY(-3px);
+}
+
+
+/* ============================================
+   5. PESTAÑAS DE CATEGORÍAS
+   ============================================ */
+
+.category-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 1000px;
+  margin: 2rem auto 3rem;
+  padding: 0 1.5rem;
+}
+
+.category-tab {
+  min-width: 140px;
+  padding: 0.75rem 1.75rem;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 50px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.category-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #5C9737 0%, #37823F 100%);
+  border-radius: 50px;
+  z-index: -1;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.category-tab:hover {
+  transform: translateY(-3px);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.category-tab:hover::before {
+  width: 100%;
+}
+
+.category-tab.active {
+  background: linear-gradient(135deg, #5C9737 0%, #37823F 100%);
+  border-color: transparent;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.category-tab.active::before {
+  width: 100%;
+}
+
+
+/* ============================================
+   6. SECCIONES DE CATEGORÍAS
+   ============================================ */
+
+.category-section {
+  display: none;
+}
+
+.category-section.active {
+  display: block;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+
+/* ============================================
+   7. ACORDEÓN
+   ============================================ */
+
+/* Contenedor del acordeón */
+.custom-accordion {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Items del acordeón */
+.custom-accordion .accordion-item {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 0;
+  background: white;
+  border: 1px solid #f1f3f5;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  animation: slideIn 0.5s ease-out forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.custom-accordion .accordion-item:hover {
+  border-color: #e9ecef;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animación escalonada */
+.custom-accordion .accordion-item:nth-child(1) { animation-delay: 0.1s; }
+.custom-accordion .accordion-item:nth-child(2) { animation-delay: 0.2s; }
+.custom-accordion .accordion-item:nth-child(3) { animation-delay: 0.3s; }
+.custom-accordion .accordion-item:nth-child(4) { animation-delay: 0.4s; }
+.custom-accordion .accordion-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* Botón del acordeón */
+.custom-accordion .accordion-button {
+  width: 100%;
+  padding: 1.5rem 2rem;
+  background-color: white;
+  border: none;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.custom-accordion .accordion-button::after {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+/* Efecto de borde inferior al hacer hover */
+.custom-accordion .accordion-button::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FFC107, #5C9737);
+  z-index: 2;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.custom-accordion .accordion-button:hover::before {
+  width: 100%;
+}
+
+/* Botón expandido */
+.custom-accordion .accordion-button:not(.collapsed) {
+  background: linear-gradient(135deg, #5C9737 0%, #37823F 100%);
+  color: white;
+  box-shadow: none;
+}
+
+.custom-accordion .accordion-button:not(.collapsed)::after {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+  transform: rotate(-180deg);
+}
+
+/* Iconos del acordeón */
+.custom-accordion .accordion-button i {
+  min-width: 24px;
+  margin-right: 1rem;
+  font-size: 1.4rem;
+  color: #37823F;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.custom-accordion .accordion-button:not(.collapsed) i {
+  color: #FFC107;
+  transform: rotate(360deg);
+}
+
+.accordion-item:hover .accordion-button i {
+  transform: scale(1.1);
+}
+
+.accordion-item:hover .accordion-button:not(.collapsed) i {
+  transform: scale(1.1) rotate(360deg);
+}
+
+/* Cuerpo del acordeón */
+.custom-accordion .accordion-body {
+  padding: 1rem 1.5rem;
+  background-color: white;
+  border-top: 1px solid #f1f3f5;
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.6;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.custom-accordion .accordion-body p {
+  margin-bottom: 1rem !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* Para contenido dinámico Angular */
+::ng-deep .custom-accordion .accordion-body p {
+  margin-bottom: 1rem !important;
+  font-size: 0.95rem !important;
+}
+
+/* Enlaces dentro del acordeón */
+.accordion-body a {
+  color: #37823F;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.accordion-body a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #FFC107;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.accordion-body a:hover {
+  color: #5C9737;
+}
+
+.accordion-body a:hover::after {
+  width: 100%;
+}
+
+
+/* ============================================
+   8. SECCIÓN DE CONTACTO
+   ============================================ */
+
+.contact-section {
+  margin: 2rem 0;
+  padding: 2.5rem;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-section:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.contact-title {
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.contact-title i {
+  margin-right: 0.8rem;
+  font-size: 1.8rem;
+  color: #5C9737;
+}
+
+.contact-text {
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+  color: #495057;
+  line-height: 1.7;
+}
+
+.contact-btn {
+  padding: 0.75rem 1.75rem;
+  background: linear-gradient(135deg, #5C9737 0%, #37823F 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(92, 151, 55, 0.2);
+  transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #4e8630 0%, #2f6e36 100%);
+  box-shadow: 0 6px 20px rgba(92, 151, 55, 0.3);
+}
+
+.contact-btn i {
+  margin-right: 0.5rem;
+}
+
+
+/* ============================================
+   9. ANIMACIONES
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+/* ============================================
+   10. RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablets y pantallas medianas (≤992px) */
+@media (max-width: 992px) {
+  .faq-container .container {
+    padding: 2rem 1.5rem;
+  }
+  
+  .custom-accordion {
+    padding: 0 0.5rem;
+  }
+  
+  .custom-accordion .accordion-button {
+    padding: 1.25rem 1rem;
+    font-size: 1.05rem;
+  }
+  
+  .custom-accordion .accordion-body {
+    padding: 0 1.5rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Tablets pequeñas (≤768px) */
+@media (max-width: 768px) {
+  .faq-header {
+    padding: 3rem 1rem 2rem;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 100% 95%, 0% 100%);
+  }
+  
+  .faq-title {
+    margin-bottom: 0.5rem;
+    padding-right: 0;
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  
+  .faq-title::after {
+    width: 60px;
+    height: 3px;
+  }
+
+  .faq-subtitle {
+    max-width: 90%;
+    margin: 0.5rem auto 1.5rem;
+    padding: 0;
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .faq-icon {
+    font-size: 3.5rem;
+  }
+
+  .category-tabs {
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .category-tab {
+    min-width: 110px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .custom-accordion .accordion-button {
+    padding: 1.25rem 1.5rem 1.25rem 1.25rem;
+    font-size: 1.05rem;
+  }
+
+  .custom-accordion .accordion-body {
+    padding: 0 1.5rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .custom-accordion .accordion-button i {
+    margin-right: 0.75rem;
+    font-size: 1.2rem;
+  }
+
+  .contact-section {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .contact-title {
+    justify-content: center;
+    font-size: 1.3rem;
+  }
+  
+  .contact-text {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  
+  .col-md-4.text-end {
+    margin-top: 1.5rem;
+    text-align: center !important;
+  }
+  
+  .contact-btn {
+    width: 100%;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+}
+
+/* Móviles (≤576px) */
+@media (max-width: 576px) {
+  .faq-header {
+    padding: 3.5rem 0 1.5rem;
+    clip-path: polygon(0 0, 100% 0, 100% 96%, 0% 100%);
+  }
+  
+  .faq-title {
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+  }
+  
+  .faq-subtitle {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .faq-icon {
+    font-size: 3rem;
+  }
+  
+  .faq-container .container {
+    width: auto;
+    margin: -1.5rem 1rem 0;
+    border-radius: 12px;
+  }
+  
+  .category-tabs {
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .category-tab {
+    min-width: calc(50% - 1rem);
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    flex: 1 1 calc(50% - 1rem);
+  }
+  
+  .custom-accordion .accordion-button {
+    padding: 1.1rem 1.25rem 1.1rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .custom-accordion .accordion-button i {
+    margin-right: 0.6rem;
+    font-size: 1.1rem;
+  }
+  
+  .custom-accordion .accordion-body {
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+}
+
+
+/* ============================================
+   11. ACCESIBILIDAD
+   ============================================ */
+
+/* Focus visible para navegación por teclado */
+.accordion-button:focus-visible {
+  outline: 3px solid #FFC107;
+  outline-offset: 2px;
+}
+
+/* Reducir movimiento para usuarios que lo prefieran */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Mayor contraste para usuarios que lo necesiten */
+@media (prefers-contrast: more) {
+  .custom-accordion .accordion-button:not(.collapsed) {
+    background: #37823F;
+  }
+  
+  .category-tab.active {
+    background: #37823F;
+  }
+  
+  .faq-header {
+    background: #37823F;
+  }
+}

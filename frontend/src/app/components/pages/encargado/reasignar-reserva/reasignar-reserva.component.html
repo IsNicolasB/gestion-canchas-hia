@@ -1,0 +1,240 @@
+<div class="body-container">
+  <div class="container py-4">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+          <div class="card-header bg-success text-white py-3">
+            <h4 class="mb-0">
+              <i class="fas fa-exchange-alt me-2"></i>Reasignar Reserva
+            </h4>
+          </div>
+          <div class="card-body">
+            <form class="row g-3" (ngSubmit)="buscarReservas()">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-futbol text-success me-2"></i>Cancha
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="fas fa-futbol text-success"></i>
+                  </span>
+                  <select class="form-select" [(ngModel)]="canchaSeleccionada" name="canchaSeleccionada" required>
+                    <option value="" selected disabled>Seleccione una cancha</option>
+                    <option *ngFor="let cancha of canchas" [value]="cancha._id">{{ cancha.nombre }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  <i class="far fa-calendar-alt text-success me-2"></i>Fecha
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="far fa-calendar-alt text-success"></i>
+                  </span>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    [(ngModel)]="fechaSeleccionada" 
+                    name="fechaSeleccionada" 
+                    [min]="minFecha"
+                    [max]="maxFecha"
+                    required
+                  >
+                </div>
+                <div class="form-text text-muted mt-2">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Reasignaciones disponibles desde hoy hasta 30 días en el futuro
+                </div>
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-success w-100" type="submit" [disabled]="!canchaSeleccionada || !fechaSeleccionada || loading">
+                  <i class="fas fa-search me-2"></i>Buscar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Lista de reservas -->
+        <div class="card border-0 shadow-sm mt-4" *ngIf="reservas.length > 0">
+          <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">
+              <i class="fas fa-list me-2 text-white"></i>Reservas del día
+            </h4>
+            <span class="badge bg-success">{{ fechaSeleccionada | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Hora</th>
+                    <th>Cliente</th>
+                    <th>Teléfono</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let reserva of reservas">
+                    <td class="fw-semibold">{{ reserva.horaInicio }} - {{ reserva.horaFin }}</td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-success text-white rounded-circle me-2" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+                          <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ reserva.cliente?.nombre }} {{ reserva.cliente?.apellido }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ reserva.cliente?.telefono }}</td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-outline-primary" (click)="abrirModalReasignar(reserva)" data-bs-toggle="modal" data-bs-target="#reasignarModal">
+                        <i class="fas fa-exchange-alt me-1"></i>Reasignar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="reservas.length === 0 && !loading && canchaSeleccionada && fechaSeleccionada" class="alert alert-info mt-4">
+          <i class="fas fa-info-circle me-2"></i>
+          No hay reservas para la cancha y fecha seleccionadas.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Reasignación -->
+  <div class="modal fade" id="reasignarModal" tabindex="-1" aria-labelledby="reasignarModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="reasignarModalLabel">
+            <i class="fas fa-exchange-alt me-2"></i>Reasignar Reserva
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" *ngIf="reservaSeleccionada">
+          <!-- Detalles de la reserva actual -->
+          <div class="mb-4">
+            <h6 class="fw-semibold text-success">
+              <i class="fas fa-info-circle me-2"></i>Detalles de la reserva actual
+            </h6>
+            <div class="card bg-light border-success">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted">Cliente:</span>
+                      <span class="fw-semibold">{{ reservaSeleccionada.cliente?.nombre }} {{ reservaSeleccionada.cliente?.apellido }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted">Cancha:</span>
+                      <span class="fw-semibold">{{ reservaSeleccionada.cancha?.nombre }}</span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="d-flex justify-content-between mb-2">
+                      <span class="text-muted">Fecha actual:</span>
+                      <span class="fw-semibold">{{ reservaSeleccionada.fecha | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <span class="text-muted">Hora actual:</span>
+                      <span class="fw-semibold">{{ reservaSeleccionada.horaInicio }} - {{ reservaSeleccionada.horaFin }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario de reasignación -->
+          <form (ngSubmit)="confirmarReasignacion()">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="far fa-calendar-alt text-success me-2"></i>Nueva Fecha
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="far fa-calendar-alt text-success"></i>
+                  </span>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    [(ngModel)]="nuevaFecha" 
+                    name="nuevaFecha" 
+                    (change)="cargarHorariosDisponibles()" 
+                    required 
+                    [min]="minFecha" 
+                    [max]="maxFecha"
+                  >
+                </div>
+                <div class="form-text text-muted mt-2">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Reasignaciones disponibles desde hoy hasta 30 días en el futuro
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">
+                  <i class="far fa-clock text-success me-2"></i>Nuevo Horario
+                </label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light">
+                    <i class="far fa-clock text-success"></i>
+                  </span>
+                  <select class="form-select" [(ngModel)]="nuevoHorario" name="nuevoHorario" required>
+                    <option value="" disabled>Seleccione un horario disponible</option>
+                    <option *ngFor="let horario of horariosDisponibles" [value]="horario.horaInicio">
+                      {{ horario.horaInicio }} - {{ horario.horaFin }}
+                      <span *ngIf="horario.horaInicio === reservaSeleccionada.horaInicio">(Actual)</span>
+                    </option>
+                  </select>
+                </div>
+                <div class="form-text text-muted mt-2">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Horarios disponibles entre 10:00 y 22:00 horas
+                </div>
+              </div>
+            </div>
+
+            <!-- Información de horarios disponibles -->
+            <div class="mt-4" *ngIf="horariosDisponibles.length > 0">
+              <div class="card border-success bg-light">
+                <div class="card-header bg-success text-white">
+                  <h6 class="mb-0">
+                    <i class="fas fa-list-ul me-2"></i>Horarios Disponibles para Reasignación
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="row g-2">
+                    <div class="col-md-4 col-sm-6" *ngFor="let horario of horariosDisponibles">
+                      <div class="p-2 border rounded text-center" 
+                           [ngClass]="nuevoHorario === horario.horaInicio ? 'border-success bg-success text-white' : 'border-light'">
+                        <div class="fw-bold">{{ horario.horaInicio }} - {{ horario.horaFin }}</div>
+                        <small *ngIf="horario.horaInicio === reservaSeleccionada.horaInicio">(Horario actual)</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <i class="fas fa-times me-2"></i>Cancelar
+              </button>
+              <button type="submit" class="btn btn-success" [disabled]="!nuevaFecha || !nuevoHorario">
+                <i class="fas fa-check-circle me-2"></i>Confirmar Reasignación
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
