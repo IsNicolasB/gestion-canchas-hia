@@ -1,0 +1,20 @@
+TP 6 - Gestión de Ticket\mantisbt\.gitignore
+# Archivo de variables de entorno
+.env
+
+# Archivos de configuración sensibles
+
+
+# Dependencias
+vendor/
+node_modules/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Carpetas
+storage/
