@@ -1,0 +1,100 @@
+<!-- Navbar -->
+<header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+      <div class="container">
+        <a class="navbar-brand d-flex align-items-center fw-bold" [routerLink]="['/']" routerLinkActive="active">
+          <i class="fas fa-futbol me-2 text-success"></i>
+          <span>FútbolReservas</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+          aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/']" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [routerLink]="['/canchas']" routerLinkActive="active">Canchas</a>
+            </li>
+            <li class="nav-item ms-lg-3">
+              <div class="dropdown">
+                <div class="nav-encargado dropdown-toggle d-flex align-items-center p-0" 
+                     data-bs-toggle="dropdown" aria-expanded="false">
+                  <div class="me-2 text-end d-none d-md-block">
+                    <div class="fw-bold">{{ usuario?.nombre }} {{ usuario?.apellido }}</div>
+                    <small class="text-muted">{{ usuario?.correo }}</small>
+                  </div>
+                  <div class="avatar bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                       style="width: 38px; height: 38px;">
+                    <i class="fas fa-user"></i>
+                  </div>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button class="dropdown-item" data-bs-toggle="offcanvas" data-bs-target="#sidebarPanel">
+                      <i class="fas fa-th-large me-2"></i>Panel de Control
+                    </button>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" [routerLink]="['/perfil']">
+                      <i class="fas fa-user me-2"></i>Perfil
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" [routerLink]="['/configuracion']">
+                      <i class="fas fa-cog me-2"></i>Configuración
+                    </a>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item text-danger" href="#" (click)="logout()">
+                      <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  
+    <!-- Offcanvas Sidebar -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarPanel" aria-labelledby="sidebarLabel">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title" id="sidebarLabel">Panel de Control</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush">
+          <a routerLink="/bloquear-horarios" routerLinkActive="active" class="list-group-item list-group-item-action py-3 fw">
+            <i class="fas fa-calendar-plus me-2 text-success"></i>
+            Bloquear Horario
+          </a>
+          <a routerLink="/reasignar-reserva" routerLinkActive="active" class="list-group-item list-group-item-action py-3">
+            <i class="fas fa-exchange-alt me-2 text-success"></i>
+            Reasignar Reserva
+          </a>
+          <a routerLink="/ver-antecedentes" routerLinkActive="active" class="list-group-item list-group-item-action py-3">
+            <i class="fas fa-search me-2 text-success"></i>
+            Ver Antecedentes
+          </a>
+          <a routerLink="/completar-pago" routerLinkActive="active" class="list-group-item list-group-item-action py-3">
+            <i class="fas fa-money-bill-wave me-2 text-success"></i>
+            Completar Pago
+          </a>
+          <a routerLink="/estadisticas" routerLinkActive="active" class="list-group-item list-group-item-action py-3">
+            <i class="fas fa-chart-bar me-2 text-success"></i>
+            Estadísticas
+          </a>
+          <a routerLink="/abm-canchas" routerLinkActive="active" class="list-group-item list-group-item-action py-3">
+            <i class="fas fa-tools me-2 text-success"></i>
+            ABM Canchas
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>

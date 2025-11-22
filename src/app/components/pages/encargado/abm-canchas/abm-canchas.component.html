@@ -1,0 +1,130 @@
+<div class="container py-4">
+  <h2 class="mb-4 fw-bold text-success">ABM de Canchas</h2>
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-success" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+  <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
+  <div class="mb-3">
+    <button class="btn btn-success shadow-sm px-4 py-2 fw-bold" (click)="abrirModalAgregar()">
+      <i class="fas fa-plus me-2"></i>Agregar Cancha
+    </button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-success">
+        <tr>
+          <th>Imagen</th>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Ubicación</th>
+          <th>Dimensiones</th>
+          <th>Precio/Hora</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cancha of canchas">
+          <td>
+            <img [src]="cancha.imagen || 'assets/default-cancha.jpg'" alt="img" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+          </td>
+          <td>{{ cancha.nombre }}</td>
+          <td>{{ cancha.tipo }}</td>
+          <td>{{ cancha.ubicacion }}</td>
+          <td>{{ cancha.dimensiones }}</td>
+          <td>${{ cancha.precioPorHora }}</td>
+          <td>{{ cancha.estado }}</td>
+          <td>
+            <button class="btn btn-outline-warning btn-sm fw-bold me-2" (click)="abrirModalEditar(cancha)"><i class="fas fa-edit"></i> Modificar</button>
+            <button class="btn btn-outline-danger btn-sm fw-bold" (click)="abrirModalEliminar(cancha)"><i class="fas fa-trash"></i> Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Agregar Cancha -->
+  <div class="modal fade show" tabindex="-1" [ngStyle]="{display: showAddModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showAddModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Agregar Cancha</h5>
+          <button type="button" class="btn-close" (click)="cerrarModal('add')"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="agregarCancha()">
+            <div class="mb-2"><input class="form-control" placeholder="URL de imagen" [(ngModel)]="nuevaCancha.imagen" name="imagen"></div>
+            <div class="mb-2"><input class="form-control" placeholder="Nombre" [(ngModel)]="nuevaCancha.nombre" name="nombre" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Tipo (Fútbol 5, 7, 11)" [(ngModel)]="nuevaCancha.tipo" name="tipo" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Ubicación" [(ngModel)]="nuevaCancha.ubicacion" name="ubicacion" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Dimensiones" [(ngModel)]="nuevaCancha.dimensiones" name="dimensiones" required></div>
+            <div class="mb-2"><input class="form-control" type="number" placeholder="Precio por hora" [(ngModel)]="nuevaCancha.precioPorHora" name="precioPorHora" required></div>
+            <div class="mb-2">
+              <select class="form-select" [(ngModel)]="nuevaCancha.estado" name="estado">
+                <option value="disponible">Disponible</option>
+                <option value="mantenimiento">En mantenimiento</option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal('add')">Cancelar</button>
+              <button type="submit" class="btn btn-success fw-bold">Agregar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Editar Cancha -->
+  <div class="modal fade show" tabindex="-1" [ngStyle]="{display: showEditModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showEditModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Modificar Cancha</h5>
+          <button type="button" class="btn-close" (click)="cerrarModal('edit')"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="editarCanchaSubmit()">
+            <div class="mb-2"><input class="form-control" placeholder="URL de imagen" [(ngModel)]="canchaEdit.imagen" name="editImagen"></div>
+            <div class="mb-2"><input class="form-control" placeholder="Nombre" [(ngModel)]="canchaEdit.nombre" name="editNombre" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Tipo (Fútbol 5, 7, 11)" [(ngModel)]="canchaEdit.tipo" name="editTipo" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Ubicación" [(ngModel)]="canchaEdit.ubicacion" name="editUbicacion" required></div>
+            <div class="mb-2"><input class="form-control" placeholder="Dimensiones" [(ngModel)]="canchaEdit.dimensiones" name="editDimensiones" required></div>
+            <div class="mb-2"><input class="form-control" type="number" placeholder="Precio por hora" [(ngModel)]="canchaEdit.precioPorHora" name="editPrecioPorHora" required></div>
+            <div class="mb-2">
+              <select class="form-select" [(ngModel)]="canchaEdit.estado" name="editEstado">
+                <option value="disponible">Disponible</option>
+                <option value="mantenimiento">En mantenimiento</option>
+              </select>
+            </div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal('edit')">Cancelar</button>
+              <button type="submit" class="btn btn-warning fw-bold">Guardar Cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Eliminar Cancha -->
+  <div class="modal fade show" tabindex="-1" [ngStyle]="{display: showDeleteModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showDeleteModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title"><i class="fas fa-trash me-2"></i>Eliminar Cancha</h5>
+          <button type="button" class="btn-close" (click)="cerrarModal('delete')"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar la cancha <b>{{ canchaAEliminar?.nombre }}</b>?</p>
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button type="button" class="btn btn-outline-secondary" (click)="cerrarModal('delete')">Cancelar</button>
+            <button type="button" class="btn btn-danger fw-bold" (click)="eliminarCanchaConfirmada()">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

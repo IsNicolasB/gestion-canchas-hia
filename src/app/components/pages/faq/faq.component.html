@@ -1,0 +1,613 @@
+<div class="faq-container">
+  <!-- Header con gradiente -->
+  <div class="faq-header">
+    <div class="row align-items-center">
+      <div class="col-md-12">
+        <h1 class="faq-title">
+          <i class="fas fa-question-circle me-3"></i>
+          Preguntas Frecuentes
+        </h1>
+        <p class="faq-subtitle">
+          Encuentra respuestas a las dudas más comunes sobre nuestro sistema de reservas
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="faq-main-content">
+    <!-- Categorías de preguntas -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="category-tabs">
+          <button 
+            class="category-tab active" 
+            data-category="general" 
+            (click)="showCategory('general')">
+            <i class="fas fa-info-circle me-2"></i>General
+          </button>
+          <button 
+            class="category-tab" 
+            data-category="reservas" 
+            (click)="showCategory('reservas')">
+            <i class="fas fa-calendar-check me-2"></i>Reservas
+          </button>
+          <button 
+            class="category-tab" 
+            data-category="pagos" 
+            (click)="showCategory('pagos')">
+            <i class="fas fa-credit-card me-2"></i>Pagos
+          </button>
+          <button 
+            class="category-tab" 
+            data-category="cuenta" 
+            (click)="showCategory('cuenta')">
+            <i class="fas fa-user me-2"></i>Cuenta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preguntas por categoría -->
+    <div class="faq-content">
+      <!-- =============================================== -->
+      <!-- CATEGORÍA: GENERAL -->
+      <!-- =============================================== -->
+      <div class="category-section active" id="general">
+        <div class="accordion custom-accordion" id="generalAccordion">
+          
+          <!-- Pregunta 1: ¿Qué es el sistema? -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="general1">
+              <button 
+                class="accordion-button" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseGeneral1" 
+                aria-expanded="true" 
+                aria-controls="collapseGeneral1">
+                <i class="fas fa-info-circle me-3 text-primary"></i>
+                ¿Qué es el sistema de reservas de canchas?
+              </button>
+            </h2>
+            <div 
+              id="collapseGeneral1" 
+              class="accordion-collapse collapse show" 
+              aria-labelledby="general1" 
+              data-bs-parent="#generalAccordion">
+              <div class="accordion-body">
+                <p>
+                  Nuestro sistema te permite reservar canchas de fútbol de manera fácil y rápida. 
+                  Puedes ver horarios disponibles, hacer reservas y pagar online desde cualquier dispositivo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 2: Horarios de atención -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="general2">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseGeneral2" 
+                aria-expanded="false" 
+                aria-controls="collapseGeneral2">
+                <i class="fas fa-clock me-3 text-warning"></i>
+                ¿Cuáles son los horarios de atención?
+              </button>
+            </h2>
+            <div 
+              id="collapseGeneral2" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="general2" 
+              data-bs-parent="#generalAccordion">
+              <div class="accordion-body">
+                <p>
+                  Nuestro sistema está disponible 24/7 para hacer reservas online. Las canchas están 
+                  disponibles de lunes a domingo en horarios que varían según la temporada. Consulta 
+                  la disponibilidad en tiempo real en nuestra plataforma.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 3: Ubicación -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="general3">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseGeneral3" 
+                aria-expanded="false" 
+                aria-controls="collapseGeneral3">
+                <i class="fas fa-map-marker-alt me-3 text-danger"></i>
+                ¿Dónde están ubicadas las canchas?
+              </button>
+            </h2>
+            <div 
+              id="collapseGeneral3" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="general3" 
+              data-bs-parent="#generalAccordion">
+              <div class="accordion-body">
+                <p>
+                  Nuestras canchas están ubicadas en diferentes puntos de la ciudad. Cada cancha 
+                  tiene su información de ubicación detallada en el sistema. Puedes ver la dirección 
+                  exacta al seleccionar una cancha para reservar.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =============================================== -->
+      <!-- CATEGORÍA: RESERVAS -->
+      <!-- =============================================== -->
+      <div class="category-section" id="reservas">
+        <div class="accordion custom-accordion" id="reservasAccordion">
+          
+          <!-- Pregunta 1: Cómo hacer una reserva -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="reservas1">
+              <button 
+                class="accordion-button" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseReservas1" 
+                aria-expanded="true" 
+                aria-controls="collapseReservas1">
+                <i class="fas fa-calendar-plus me-3 text-success"></i>
+                ¿Cómo hago una reserva?
+              </button>
+            </h2>
+            <div 
+              id="collapseReservas1" 
+              class="accordion-collapse collapse show" 
+              aria-labelledby="reservas1" 
+              data-bs-parent="#reservasAccordion">
+              <div class="accordion-body">
+                <ol>
+                  <li>Inicia sesión en tu cuenta</li>
+                  <li>Ve a la sección "Canchas"</li>
+                  <li>Selecciona la fecha deseada</li>
+                  <li>Elige el horario disponible</li>
+                  <li>Confirma tu reserva</li>
+                  <li>Realiza el pago correspondiente</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 2: Cancelar reserva -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="reservas2">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseReservas2" 
+                aria-expanded="false" 
+                aria-controls="collapseReservas2">
+                <i class="fas fa-calendar-times me-3 text-danger"></i>
+                ¿Puedo cancelar una reserva?
+              </button>
+            </h2>
+            <div 
+              id="collapseReservas2" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="reservas2" 
+              data-bs-parent="#reservasAccordion">
+              <div class="accordion-body">
+                <p>
+                  Sí, puedes cancelar una reserva desde la sección "Mis Reservas" siempre que no esté 
+                  completamente pagada. Las cancelaciones deben realizarse con al menos 24 horas de 
+                  anticipación para recibir reembolso completo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 3: Modificar reserva -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="reservas3">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseReservas3" 
+                aria-expanded="false" 
+                aria-controls="collapseReservas3">
+                <i class="fas fa-calendar-edit me-3 text-info"></i>
+                ¿Puedo modificar una reserva existente?
+              </button>
+            </h2>
+            <div 
+              id="collapseReservas3" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="reservas3" 
+              data-bs-parent="#reservasAccordion">
+              <div class="accordion-body">
+                <p>
+                  Las modificaciones de reservas están sujetas a disponibilidad. Puedes contactar al 
+                  encargado desde la sección "Mis Reservas" para solicitar cambios de fecha, horario o cancha.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 4: Capacidad -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="reservas4">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseReservas4" 
+                aria-expanded="false" 
+                aria-controls="collapseReservas4">
+                <i class="fas fa-users me-3 text-warning"></i>
+                ¿Cuántas personas pueden jugar por cancha?
+              </button>
+            </h2>
+            <div 
+              id="collapseReservas4" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="reservas4" 
+              data-bs-parent="#reservasAccordion">
+              <div class="accordion-body">
+                <p>
+                  La capacidad varía según el tipo de cancha. Tenemos canchas para 5, 7 y 11 jugadores. 
+                  La información específica de cada cancha se muestra al momento de hacer la reserva.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 5: Duración -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="reservas5">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseReservas5" 
+                aria-expanded="false" 
+                aria-controls="collapseReservas5">
+                <i class="fas fa-clock me-3 text-primary"></i>
+                ¿Cuánto dura cada reserva?
+              </button>
+            </h2>
+            <div 
+              id="collapseReservas5" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="reservas5" 
+              data-bs-parent="#reservasAccordion">
+              <div class="accordion-body">
+                <p>
+                  Cada reserva tiene una duración estándar de 1 hora. Si necesitas más tiempo, 
+                  puedes hacer reservas consecutivas o contactar al encargado para horarios especiales.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =============================================== -->
+      <!-- CATEGORÍA: PAGOS -->
+      <!-- =============================================== -->
+      <div class="category-section" id="pagos">
+        <div class="accordion custom-accordion" id="pagosAccordion">
+          
+          <!-- Pregunta 1: Métodos de pago -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pagos1">
+              <button 
+                class="accordion-button" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapsePagos1" 
+                aria-expanded="true" 
+                aria-controls="collapsePagos1">
+                <i class="fas fa-credit-card me-3 text-success"></i>
+                ¿Qué métodos de pago aceptan?
+              </button>
+            </h2>
+            <div 
+              id="collapsePagos1" 
+              class="accordion-collapse collapse show" 
+              aria-labelledby="pagos1" 
+              data-bs-parent="#pagosAccordion">
+              <div class="accordion-body">
+                <p>Aceptamos múltiples métodos de pago:</p>
+                <ul>
+                  <li>Tarjetas de crédito y débito</li>
+                  <li>Transferencias bancarias</li>
+                  <li>Pago en efectivo (en el establecimiento)</li>
+                  <li>Billeteras digitales</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 2: Historial de pagos -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pagos2">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapsePagos2" 
+                aria-expanded="false" 
+                aria-controls="collapsePagos2">
+                <i class="fas fa-receipt me-3 text-info"></i>
+                ¿Cómo puedo ver mi historial de pagos?
+              </button>
+            </h2>
+            <div 
+              id="collapsePagos2" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="pagos2" 
+              data-bs-parent="#pagosAccordion">
+              <div class="accordion-body">
+                <p>
+                  Puedes ver tu historial completo de pagos en la sección "Mis Pagos" de tu cuenta. 
+                  Allí encontrarás todos los pagos realizados, pendientes y cancelados con sus respectivos detalles.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 3: Política de reembolsos -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pagos3">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapsePagos3" 
+                aria-expanded="false" 
+                aria-controls="collapsePagos3">
+                <i class="fas fa-undo me-3 text-warning"></i>
+                ¿Cuál es la política de reembolsos?
+              </button>
+            </h2>
+            <div 
+              id="collapsePagos3" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="pagos3" 
+              data-bs-parent="#pagosAccordion">
+              <div class="accordion-body">
+                <p><strong>Por ahora no está implementado ningún sistema de reembolsos.</strong></p>
+                <p>En un futuro los reembolsos se procesarán según las siguientes condiciones:</p> 
+                <ul>
+                  <li><strong>24+ horas antes:</strong> Reembolso completo</li>
+                  <li><strong>12-24 horas antes:</strong> Reembolso del 50%</li>
+                  <li><strong>Menos de 12 horas:</strong> Sin reembolso</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 4: Pago en cuotas -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="pagos4">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapsePagos4" 
+                aria-expanded="false" 
+                aria-controls="collapsePagos4">
+                <i class="fas fa-money-bill-wave me-3 text-success"></i>
+                ¿Puedo pagar en cuotas?
+              </button>
+            </h2>
+            <div 
+              id="collapsePagos4" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="pagos4" 
+              data-bs-parent="#pagosAccordion">
+              <div class="accordion-body">
+                <p>
+                  Ofrecemos la opción de pago en cuotas para reservas de múltiples horas o paquetes especiales. 
+                  Consulta con el encargado para más detalles sobre las opciones disponibles.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- =============================================== -->
+      <!-- CATEGORÍA: CUENTA -->
+      <!-- =============================================== -->
+      <div class="category-section" id="cuenta">
+        <div class="accordion custom-accordion" id="cuentaAccordion">
+          
+          <!-- Pregunta 1: Registro -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cuenta1">
+              <button 
+                class="accordion-button" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseCuenta1" 
+                aria-expanded="true" 
+                aria-controls="collapseCuenta1">
+                <i class="fas fa-user-plus me-3 text-primary"></i>
+                ¿Cómo me registro en el sistema?
+              </button>
+            </h2>
+            <div 
+              id="collapseCuenta1" 
+              class="accordion-collapse collapse show" 
+              aria-labelledby="cuenta1" 
+              data-bs-parent="#cuentaAccordion">
+              <div class="accordion-body">
+                <p>Para registrarte:</p>
+                <ol>
+                  <li>Haz clic en "Registrarse" en la página principal</li>
+                  <li>Completa el formulario con tus datos personales</li>
+                  <li>Verifica tu correo electrónico</li>
+                  <li>¡Listo! Ya puedes hacer reservas</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 2: Olvidé mi contraseña -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cuenta2">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseCuenta2" 
+                aria-expanded="false" 
+                aria-controls="collapseCuenta2">
+                <i class="fas fa-key me-3 text-warning"></i>
+                ¿Qué hago si olvidé mi contraseña?
+              </button>
+            </h2>
+            <div 
+              id="collapseCuenta2" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="cuenta2" 
+              data-bs-parent="#cuentaAccordion">
+              <div class="accordion-body">
+                <p>
+                  En la página de inicio de sesión, haz clic en "¿Olvidaste tu contraseña?" e ingresa 
+                  tu correo electrónico. Recibirás un enlace para restablecer tu contraseña de forma segura.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 3: Cambiar datos personales -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cuenta3">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseCuenta3" 
+                aria-expanded="false" 
+                aria-controls="collapseCuenta3">
+                <i class="fas fa-user-edit me-3 text-info"></i>
+                ¿Puedo cambiar mis datos personales?
+              </button>
+            </h2>
+            <div 
+              id="collapseCuenta3" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="cuenta3" 
+              data-bs-parent="#cuentaAccordion">
+              <div class="accordion-body">
+                <p>
+                  Sí, puedes editar tu información personal en la sección "Perfil" de tu cuenta. 
+                  Allí podrás actualizar tu nombre, correo electrónico, teléfono y otros datos de contacto.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 4: Cambiar contraseña -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cuenta4">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseCuenta4" 
+                aria-expanded="false" 
+                aria-controls="collapseCuenta4">
+                <i class="fas fa-shield-alt me-3 text-success"></i>
+                ¿Cómo puedo cambiar mi contraseña?
+              </button>
+            </h2>
+            <div 
+              id="collapseCuenta4" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="cuenta4" 
+              data-bs-parent="#cuentaAccordion">
+              <div class="accordion-body">
+                <p>
+                  Ve a la sección "Configuración" de tu cuenta y selecciona "Cambiar contraseña". 
+                  Ingresa tu contraseña actual y la nueva contraseña que desees usar.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pregunta 5: Eliminar cuenta -->
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="cuenta5">
+              <button 
+                class="accordion-button collapsed" 
+                type="button" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#collapseCuenta5" 
+                aria-expanded="false" 
+                aria-controls="collapseCuenta5">
+                <i class="fas fa-trash me-3 text-danger"></i>
+                ¿Puedo eliminar mi cuenta?
+              </button>
+            </h2>
+            <div 
+              id="collapseCuenta5" 
+              class="accordion-collapse collapse" 
+              aria-labelledby="cuenta5" 
+              data-bs-parent="#cuentaAccordion">
+              <div class="accordion-body">
+                <p>
+                  Sí, puedes eliminar tu cuenta desde la sección "Configuración". Ten en cuenta que 
+                  esta acción es irreversible y eliminará todos tus datos, reservas y pagos del sistema.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- =============================================== -->
+  <!-- SECCIÓN DE CONTACTO -->
+  <!-- =============================================== -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="contact-section">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h3 class="contact-title">
+              <i class="fas fa-headset me-3 text-primary"></i>
+              ¿No encontraste tu respuesta?
+            </h3>
+            <p class="contact-text">
+              Nuestro equipo de soporte está aquí para ayudarte. Contáctanos y te responderemos lo antes posible.
+            </p>
+          </div>
+          <div class="col-md-4 text-end">
+            <button 
+              class="btn btn-primary btn-lg contact-btn" 
+              (click)="contactSupport()">
+              <i class="fas fa-envelope me-2"></i>
+              Contactar Soporte
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

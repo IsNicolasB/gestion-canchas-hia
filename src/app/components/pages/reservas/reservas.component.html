@@ -1,0 +1,222 @@
+<div class="body-container ">
+  <div class="container py-5">
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border text-success" role="status"></div>
+    </div>
+    <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
+    <div class="row justify-content-center" *ngIf="!loading && !error">
+      <div class="col-lg-8">
+        <div class="text-center mb-5">
+          <h1 class="fw-bold text-success mb-3">Confirmar Reserva</h1>
+          <p class="text-muted">Revisa los detalles de tu reserva antes de continuar</p>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex align-items-center mb-4">
+              <div class="flex-shrink-0">
+                <img [src]="cancha?.imagen || 'assets/cancha1.jpg'" alt="Cancha" class="img-fluid rounded" style="width: 120px; height: 90px; object-fit: cover;">
+              </div>
+              <div class="ms-4">
+                <h4 class="fw-bold mb-1">{{ cancha?.nombre }}</h4>
+                <p class="text-muted mb-2">
+                  <i class="fas fa-map-marker-alt text-success me-2"></i>{{ cancha?.ubicacion }}
+                </p>
+                <div class="d-flex">
+                  <span class="badge bg-light text-dark me-2">
+                    <i class="fas fa-users me-1"></i>
+                    {{ cancha?.tipo }}
+                  </span>
+                  <span class="badge bg-light text-dark">
+                    <i class="fas fa-ruler-combined me-1"></i> {{ cancha?.dimensiones }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-md-6">
+                <h5 class="fw-bold mb-3">Detalles de la Reserva</h5>
+                <ul class="list-unstyled">
+                  <li class="mb-2">
+                    <i class="far fa-calendar-alt text-success me-2"></i>
+                    <span class="fw-medium">Fecha:</span> {{ fecha | date:'dd/MM/yyyy' }}
+                  </li>
+                  <li class="mb-2">
+                    <i class="far fa-clock text-success me-2"></i>
+                    <span class="fw-medium">Hora: </span> {{ hora }} - {{ horaFin }}
+                  </li>
+                  <li class="mb-2">
+                    <i class="fas fa-hourglass-half text-success me-2"></i>
+                    <span class="fw-medium">Duración: </span> {{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }}
+                  </li>
+                  <li class="mb-2" *ngIf="cliente">
+                    <i class="far fa-user text-success me-2"></i>
+                    <span class="fw-medium">A nombre de: </span> {{ cliente.nombre }} {{ cliente.apellido }}
+                  </li>
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <h5 class="fw-bold mb-3">Resumen de Pago</h5>
+                <div class="bg-light p-3 rounded mb-3">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Precio por hora:</span>
+                    <span class="fw-medium">${{ cancha?.precioPorHora || '0' }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Cantidad de horas:</span>
+                    <span class="fw-medium">{{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span class="fw-medium">${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras) : 0 | number:'1.0-0' }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Seña (30%):</span>
+                    <span class="fw-medium text-success">${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras * 0.3) : 0 | number:'1.0-0' }}</span>
+                  </div>
+                  <hr class="my-2">
+                  <div class="d-flex justify-content-between fw-bold">
+                    <span>Total a pagar ahora:</span>
+                    <span>${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras * 0.3) : 0 | number:'1.0-0' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Método de Pago -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">Método de Pago</h5>
+            <div class="text-center mb-4" *ngIf="mp_init_point">
+              <div class="qr-code-placeholder bg-light p-3 d-inline-block mb-3">
+                <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + mp_init_point"
+                     alt="Código QR de pago" class="img-fluid" style="width: 180px;">
+              </div>
+              <p class="text-muted small">Escanea el código QR para realizar el pago</p>
+              <a [href]="mp_init_point" target="_blank" class="text-decoration-none small text-primary">
+                <i class="fas fa-external-link-alt me-1"></i>Redirigir al pago
+              </a>
+            </div>
+            <div *ngIf="!mp_init_point" class="text-center">
+              <button class="btn btn-success" (click)="confirmarPago()">
+                <i class="fas fa-credit-card me-2"></i>Generar Link de Pago
+              </button>
+            </div>
+            <div class="alert alert-warning mt-3" role="alert">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <div>
+                  <strong>Importante:</strong> Tu reserva se confirmará una vez que se acredite el pago de la seña.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comprobante de Reserva (solo si la reserva está confirmada) -->
+        <div *ngIf="reservaConfirmada" class="bg-white p-4 mb-4 border" id="comprobante">
+          <div class="text-center mb-4 border-bottom pb-3">
+            <h4 class="fw-bold mb-1">COMPROBANTE DE RESERVA</h4>
+            <p class="text-muted mb-0">N° {{ reserva?.numero }}</p>
+            <p class="text-success fw-bold mb-0">RESERVA CONFIRMADA</p>
+          </div>
+          <div class="mb-4">
+            <h5 class="border-bottom pb-1 mb-3">DETALLES DE LA CANCHA</h5>
+            <div class="row">
+              <div class="col">
+                <p class="mb-1"><strong>Nombre de la cancha:</strong> {{ cancha?.nombre }}</p>
+                <p class="mb-1"><strong>Ubicación:</strong> {{ cancha?.ubicacion }}</p>
+                <p class="mb-1"><strong>Capacidad:</strong> {{ cancha?.capacidad || 'N/A' }}</p>
+                <p class="mb-0"><strong>Tamaño:</strong> {{ cancha?.dimensiones }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <h5 class="border-bottom pb-1 mb-3">DETALLES DE LA RESERVA</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Fecha:</strong> {{ fecha | date:'dd/MM/yyyy' }}</p>
+                <p class="mb-1"><strong>Hora:</strong> {{ hora }} - {{ horaFin }}</p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Cliente:</strong> {{ cliente?.nombre }} {{ cliente?.apellido }}</p>
+                <p class="mb-1"><strong>Duración:</strong> {{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="mb-4">
+            <h5 class="border-bottom pb-1 mb-3">RESUMEN DE PAGO</h5>
+            <div class="table-responsive">
+              <table class="table table-sm table-borderless">
+                <tbody>
+                  <tr>
+                    <td>Precio por hora:</td>
+                    <td class="text-end">${{ cancha?.precioPorHora }}</td>
+                  </tr>
+                  <tr>
+                    <td>Cantidad de horas:</td>
+                    <td class="text-end">{{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }}</td>
+                  </tr>
+                  <tr>
+                    <td>Subtotal:</td>
+                    <td class="text-end">${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras) : 0 | number:'1.0-0' }}</td>
+                  </tr>
+                  <tr>
+                    <td>Seña (30%):</td>
+                    <td class="text-end text-success">${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras * 0.3) : 0 | number:'1.0-0' }}</td>
+                  </tr>
+                  <tr class="border-top">
+                    <td class="fw-bold">Total Pagado:</td>
+                    <td class="text-end fw-bold">${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras * 0.3) : 0 | number:'1.0-0' }}</td>
+                  </tr>
+                  <tr>
+                    <td>Saldo Pendiente:</td>
+                    <td class="text-end">
+                      ${{ cancha?.precioPorHora ? (cancha.precioPorHora * cantidadHoras * 0.7) : 0 | number:'1.0-0' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="alert alert-warning mt-3" role="alert">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <div>
+                  <strong>Importante:</strong> Presenta este comprobante el día de tu reserva. El saldo restante deberá ser pagado en efectivo al momento de hacer uso de la cancha.
+                </div>
+              </div>
+            </div>
+            <div class="border-top pt-3">
+              <p class="small text-muted mb-2 text-center">
+                <strong>Nota:</strong> Este comprobante es válido solo para la fecha y hora indicadas.
+              </p>
+            </div>
+            <div class="text-center mt-4 pt-3 border-top">
+              <p class="small text-muted mb-0">
+                Gracias por tu reserva. ¡Te esperamos!
+              </p>
+              <p class="small text-muted">
+                Para consultas: contacto&#64;futbolreservas.com | Tel: (123) 456-7890
+              </p>
+            </div>
+            <div class="d-print-none mt-4 text-center">
+              <button class="btn btn-outline-secondary btn-sm me-2" (click)="imprimirComprobante()">
+                <i class="fas fa-print me-1"></i>Imprimir
+              </button>
+              <button class="btn btn-outline-secondary btn-sm me-2" (click)="descargarPDF()">
+                <i class="fas fa-download me-1"></i>Descargar PDF
+              </button>
+              <a href="/" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-home me-1"></i>Volver al Inicio
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Fin comprobante -->
+      </div>
+    </div>
+  </div>
+</div>

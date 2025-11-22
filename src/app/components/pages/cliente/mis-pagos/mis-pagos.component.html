@@ -1,0 +1,127 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Mis Pagos</h2>
+    <button class="btn btn-outline-primary" (click)="recargarPagos()">
+      <i class="fas fa-sync-alt"></i> Recargar
+    </button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Buscar por descripción o estado..." [(ngModel)]="filtro" (input)="filtrarPagos()">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="estadoFiltro" (change)="filtrarPagos()">
+        <option value="">Todos los estados</option>
+        <option value="pagado">Pagado</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="señado">Señado</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="cargando" class="text-center my-5">
+    <div class="spinner-border text-success" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <table *ngIf="!cargando && pagosFiltrados.length > 0" class="table table-bordered table-hover align-middle">
+    <thead class="table-success">
+      <tr>
+        <th>Fecha</th>
+        <th>Importe Total</th>
+        <th>Importe Pendiente</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let pago of pagosFiltrados">
+        <td>{{ pago.fecha | date:'shortDate' }}</td>
+        <td>${{ pago.importeTotal }}</td>
+        <td>${{ pago.importePendiente }}</td>
+        <td>
+          <span [ngClass]="{
+            'badge bg-success': pago.estado === 'pagado',
+            'badge bg-warning text-dark': pago.estado === 'pendiente',
+            'badge bg-info text-dark': pago.estado === 'señado'
+          }">{{ pago.estado | titlecase }}</span>
+        </td>
+        <td>
+          <div class="btn-group">
+            <button class="btn btn-outline-primary btn-sm" (click)="mostrarComprobante(pago)">
+              <i class="fas fa-file-invoice"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="!cargando && pagosFiltrados.length === 0" class="alert alert-info">
+    No tienes pagos registrados.
+  </div>
+</div>
+
+<!-- Modal Comprobante Visual -->
+<div class="modal fade show" tabindex="-1" [ngStyle]="{display: showComprobanteModal ? 'block' : 'none', background: 'rgba(0,0,0,0.3)'}" *ngIf="showComprobanteModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header"
+        [ngClass]="{
+          'bg-success text-white': comprobantePago?.estado === 'pagado',
+          'bg-warning text-dark': comprobantePago?.estado === 'pendiente',
+          'bg-info text-dark': comprobantePago?.estado === 'señado'
+        }">
+        <h5 class="modal-title">
+          <i class="fas fa-file-invoice me-2"></i>
+          Comprobante de Pago
+        </h5>
+        <button type="button" class="btn-close" (click)="cerrarModal('comprobante')"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="comprobantePago">
+          <div class="border rounded p-4 bg-light">
+            <h4 class="mb-3 text-center">Comprobante de Pago</h4>
+            <div class="row mb-2">
+              <div class="col-6"><b>Fecha del Pago:</b> {{ comprobantePago.fecha | date:'fullDate' }}</div>
+              <div class="col-6"><b>ID de Pago:</b> {{ comprobantePago._id }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><b>Importe Total:</b> ${{ comprobantePago.importeTotal }}</div>
+              <div class="col-6"><b>Importe Pendiente:</b> ${{ comprobantePago.importePendiente }}</div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-6"><b>Estado:</b> <span [ngClass]="{
+                'badge bg-success': comprobantePago.estado === 'pagado',
+                'badge bg-warning text-dark': comprobantePago.estado === 'pendiente',
+                'badge bg-info text-dark': comprobantePago.estado === 'señado'
+              }">{{ comprobantePago.estado | titlecase }}</span></div>
+            </div>
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <ng-container [ngSwitch]="comprobantePago.estado">
+                  <i *ngSwitchCase="'pagado'" class="fas fa-check-circle fa-2x text-success"></i>
+                  <i *ngSwitchCase="'pendiente'" class="fas fa-hourglass-half fa-2x text-warning"></i>
+                  <i *ngSwitchCase="'señado'" class="fas fa-info-circle fa-2x text-info"></i>
+                  <i *ngSwitchDefault class="fas fa-question-circle fa-2x text-secondary"></i>
+                </ng-container>
+                <div class="fw-bold mt-2">
+                  <ng-container [ngSwitch]="comprobantePago.estado">
+                    <span *ngSwitchCase="'pagado'">Pago registrado correctamente</span>
+                    <span *ngSwitchCase="'pendiente'">Pago pendiente de confirmación</span>
+                    <span *ngSwitchCase="'señado'">Pago señado parcialmente</span>
+                    <span *ngSwitchDefault>Estado desconocido</span>
+                  </ng-container>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarModal('comprobante')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

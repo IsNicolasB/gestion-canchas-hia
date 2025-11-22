@@ -1,0 +1,14 @@
+.container { max-width: 900px; }
+.table th, .table td { text-align: center; vertical-align: middle; }
+.btn { font-weight: 500; border-radius: 6px; }
+.btn-success { background-color: #198754; border-color: #198754; }
+.btn-success:hover { background-color: #157347; border-color: #146c43; }
+.btn-outline-warning { color: #ffc107; border-color: #ffc107; }
+.btn-outline-warning:hover { background: #ffc107; color: #fff; }
+.btn-outline-danger { color: #dc3545; border-color: #dc3545; }
+.btn-outline-danger:hover { background: #dc3545; color: #fff; }
+.modal-content { border-radius: 12px; }
+.modal-header { background: #f8f9fa; }
+.modal-title { color: #198754; font-weight: 600; }
+.bg-danger { background: #dc3545 !important; }
+.text-white { color: #fff !important; }

@@ -1,0 +1,235 @@
+<div class="body-container">
+  <!-- Football Field Banner -->
+  <div class="football-banner">
+    <div class="container">
+      <div class="banner-content">
+        <h1 class="banner-title">
+          <span class="title-text">Nuestras Canchas</span>
+          <span class="football-icon"> ⚽
+          </span>
+        </h1>
+        <p class="banner-subtitle">Descubre y reserva las mejores canchas de fútbol</p>
+      </div>
+    </div>
+    <div class="field-overlay"></div>
+  </div>
+
+  <div class="container py-5">
+
+    <div *ngIf="loading" class="text-center my-5">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+    <div *ngIf="error" class="alert alert-danger text-center">{{ error }}</div>
+
+    <div class="row g-4" *ngIf="!loading && !error">
+      <div class="col-md-4 mb-4" *ngFor="let cancha of canchas">
+        <div class="card h-100 border-0 shadow-sm">
+          <div class="position-relative">
+            <img [src]="cancha.imagen || 'assets/default-cancha.jpg'" class="card-img-top" [alt]="cancha.tipo">
+            <span class="position-absolute top-0 end-0 bg-green text-white px-2 py-1 m-2 rounded">
+              {{ cancha.tipo }}
+            </span>
+          </div>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fw-bold">{{ cancha.nombre }}</h5>
+            <p class="card-text text-muted">
+              <i class="fas fa-map-marker-alt text-green me-2"></i>{{ cancha.ubicacion }}
+            </p>
+            <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
+              <i class="fas fa-tag text-green me-2"></i>
+              <div>
+                <div class="fw-bold">
+                  {{ cancha.estado === 'disponible' ? ('$' + cancha.precioPorHora) : 'No disponible' }}
+                </div>
+                <small class="text-muted">por hora</small>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="badge bg-light text-dark">
+                <i class="fas fa-users me-1"></i>
+                <!-- Puedes ajustar esto si tienes info de jugadores -->
+                {{ cancha.tipo === 'Fútbol 5' ? '5 jugadores' : cancha.tipo === 'Fútbol 7' ? '7 jugadores' : cancha.tipo === 'Fútbol 11' ? '11 jugadores' : '' }}
+              </span>
+              <span class="badge bg-light text-dark">
+                <i class="fas fa-ruler-combined me-1"></i> {{ cancha.dimensiones }}
+              </span>
+            </div>
+            <div class="mt-auto">
+              <button class="btn btn-success w-100"
+                      [disabled]="cancha.estado !== 'disponible'"
+                      (click)="abrirModalHorarios(cancha)">
+                <i class="far fa-calendar-alt me-2"></i>
+                {{ cancha.estado === 'disponible' ? 'Ver Horarios' : 'No disponible' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="canchas.length === 0" class="text-center text-muted w-100">
+        No hay canchas disponibles.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="horariosModal" tabindex="-1" aria-labelledby="horariosModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-green">
+        <h5 class="modal-title fw-bold text-white" id="horariosModalLabel">
+          <i class="fas fa-calendar-check me-2"></i>Reservar Cancha
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <!-- Información de la Cancha -->
+        <div class="card border-0 bg-light mb-4" *ngIf="selectedCancha">
+          <div class="card-body p-3">
+            <div class="d-flex align-items-center">
+              <img [src]="selectedCancha.imagen || 'assets/default-cancha.jpg'" 
+                   class="rounded me-3" 
+                   style="width: 60px; height: 45px; object-fit: cover;">
+              <div>
+                <h6 class="fw-bold mb-1 text-success">{{ selectedCancha.nombre }}</h6>
+                <p class="text-muted mb-0 small">
+                  <i class="fas fa-map-marker-alt me-1"></i>{{ selectedCancha.ubicacion }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selección de Fecha -->
+        <div class="mb-4">
+          <label for="fechaSeleccionada" class="form-label fw-bold text-dark">
+            <i class="fas fa-calendar-alt text-success me-2"></i>Fecha de Reserva
+          </label>
+          <div class="input-group">
+            <span class="input-group-text bg-light">
+              <i class="fas fa-calendar text-success"></i>
+            </span>
+            <input
+              type="date"
+              id="fechaSeleccionada"
+              class="form-control border-start-0"
+              [min]="minFecha"
+              [max]="maxFecha"
+              [(ngModel)]="selectedFecha"
+              (change)="onFechaChange()"
+              required
+            />
+          </div>
+          <div class="form-text text-muted mt-2">
+            <i class="fas fa-info-circle me-1"></i>
+            Reservas disponibles desde hoy hasta 30 días en el futuro
+          </div>
+        </div>
+
+        <!-- Cantidad de Horas -->
+        <div class="mb-4">
+          <label for="cantidadHoras" class="form-label fw-bold text-dark">
+            <i class="fas fa-clock text-success me-2"></i>Duración de la Reserva
+          </label>
+          <div class="input-group">
+            <span class="input-group-text bg-light">
+              <i class="fas fa-hourglass-half text-success"></i>
+            </span>
+            <select id="cantidadHoras" class="form-select border-start-0" [(ngModel)]="cantidadHoras" required>
+              <option *ngFor="let h of [1,2,3,4]" [value]="h">{{ h }} hora{{ h > 1 ? 's' : '' }}</option>
+            </select>
+          </div>
+          <div class="form-text text-muted mt-2">
+            <i class="fas fa-info-circle me-1"></i>
+            Horarios disponibles entre 10:00 y 22:00 horas
+          </div>
+        </div>
+
+        <!-- Horarios Disponibles -->
+        <div class="mb-4">
+          <h6 class="fw-bold text-dark mb-3">
+            <i class="fas fa-list-ul text-success me-2"></i>Horarios Disponibles
+            <small class="text-muted">(Selecciona un horario disponible)</small>
+          </h6>
+          
+          <div *ngIf="loadingHorarios" class="text-center py-4">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="text-muted mt-2">Cargando horarios disponibles...</p>
+          </div>
+
+          <div *ngIf="!loadingHorarios">
+            <div *ngIf="horariosDisponibles.length > 0; else noDisponibles" class="row g-2">
+              <div class="col-md-3 col-sm-4 col-6" *ngFor="let hora of horariosDisponibles">
+                <button
+                  class="btn w-100 h-100"
+                  [ngClass]="horaSeleccionada === hora ? 'btn-success' : 'btn-outline-secondary'"
+                  (click)="seleccionarHora(hora)"
+                  style="min-height: 50px;">
+                  <div class="fw-bold">{{ hora }}</div>
+                  <small class="d-block" *ngIf="horaSeleccionada === hora">
+                    <i class="fas fa-check"></i>
+                  </small>
+                </button>
+              </div>
+            </div>
+            
+            <ng-template #noDisponibles>
+              <div class="alert alert-warning text-center border-0 bg-light">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                <strong>No hay horarios disponibles</strong> para la fecha seleccionada.
+                <br>
+                <small class="text-muted">Intenta con otra fecha o cancha.</small>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Resumen de la Reserva -->
+        <div class="card border-success bg-light" *ngIf="horaSeleccionada && selectedFecha">
+          <div class="card-header bg-success text-white">
+            <h6 class="mb-0">
+              <i class="fas fa-receipt me-2"></i>Resumen de la Reserva
+            </h6>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Cancha:</strong> {{ selectedCancha?.nombre }}</p>
+                <p class="mb-1"><strong>Fecha:</strong> {{ selectedFecha | date:'fullDate' }}</p>
+              </div>
+              <div class="col-md-6">
+                <p class="mb-1"><strong>Horario:</strong> {{ horaSeleccionada }} - {{ getHoraFin(horaSeleccionada) }}</p>
+                <p class="mb-1"><strong>Duración:</strong> {{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+            <div class="mt-2 p-2 bg-white rounded">
+              <p class="mb-0 text-success fw-bold">
+                <i class="fas fa-tag me-1"></i>
+                Precio: ${{ selectedCancha?.precioPorHora * cantidadHoras }} 
+                <small class="text-muted">({{ cantidadHoras }} hora{{ cantidadHoras > 1 ? 's' : '' }} × ${{ selectedCancha?.precioPorHora }})</small>
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Cancelar
+        </button>
+        <button
+          class="btn btn-success"
+          [disabled]="!horaSeleccionada || !selectedFecha"
+          (click)="reservar()">
+          <i class="fas fa-calendar-check me-2"></i>
+          {{ horaSeleccionada ? 'Confirmar Reserva' : 'Seleccionar Horario' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
