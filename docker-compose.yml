@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # 1. SERVICIO DE BASE DE DATOS (MONGODB)
+  mongo:
+    image: mongo:latest # Imagen oficial de MongoDB
+    container_name: mongodb_db_hia
+    restart: always
+    ports:
+      - "27017:27017" # Puerto local (host) : Puerto del contenedor
+    # El volumen ahora es relativo a la carpeta backend-hia/ (donde está este .yml)
+    volumes:
+      - mongo_data:/data/db # Persistencia de los datos
+    environment:
+      # Credenciales para la conexión del backend y el cliente
+      MONGO_INITDB_ROOT_USERNAME: devuser
+      MONGO_INITDB_ROOT_PASSWORD: devpass
+      # Nombre de la base de datos a crear
+      MONGO_INITDB_DATABASE: mi_app_db
+
+  # 2. SERVICIO DE BACKEND (NODEJS/EXPRESS)
+  backend:
+    # EL CONTEXTO DE CONSTRUCCIÓN ES AHORA LA CARPETA ACTUAL (./)
+    build: 
+      context: ./ 
+    container_name: backend_hia_service
+    restart: always
+    ports:
+      - "3000:3000" # Mapea el puerto 3000 del backend al host
+    environment:
+      # URI de conexión con la solución de autenticación (authSource=admin)
+      MONGODB_URI: mongodb://devuser:devpass@mongo:27017/mi_app_db?authSource=admin
+    depends_on:
+      - mongo # Asegura que la DB inicie antes que el backend
+    # Mapeo de volumen para desarrollo en caliente (AHORA ES ./ PORQUE ESTAMOS DENTRO)
+    volumes:
+      - ./:/usr/src/app
+      - /usr/src/app/node_modules # Excluye node_modules de la sincronización del volumen
+      
+  # 3. SERVICIO DE CLIENTE VISUAL (MONGO EXPRESS)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo_express_client_hia
+    restart: always
+    ports:
+      - "8081:8081" # Acceso desde el navegador: http://localhost:8081
+    environment:
+      # Conexión al servicio 'mongo' (usando las credenciales anteriores)
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: devuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: devpass
+      
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: 'true' 
+      
+      # Credenciales para acceder a la interfaz web de Mongo Express
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password123
+    depends_on:
+      - mongo
+
+# Definición del volumen para persistencia
+volumes:
+  mongo_data:
