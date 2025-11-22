@@ -1,0 +1,49 @@
+services:
+  mantis_db:
+    image: postgres:17.6
+    container_name: mantis_db
+    environment:
+      POSTGRES_DB: mantis_bt
+      POSTGRES_USER: defaultdb_uq64_user
+      POSTGRES_PASSWORD: 39EBHhXA30MwMK7rimdltCxjWL8pxdbV
+    volumes:
+      - ./data/postgres_data2:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - mantis_network
+  mantisbt:
+    image: xlrl/mantisbt:2.27.3
+    container_name: mantisbt
+    env_file: .env
+    environment:
+      MANTIS_TIMEZONE: America/Argentina/Jujuy
+      MANTIS_ENABLE_ADMIN: 1
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_MODE: ${SMTP_MODE}
+      APP_URL: ${APP_URL}
+    ports:
+      - "8085:80"
+    depends_on:
+      - mantis_db
+    volumes:
+      - ./config/config_inc.php:/var/www/html/config/config_inc.php:ro
+    restart: always
+    networks:
+      - mantis_network
+  mantis_tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: mantis_tunnel
+    command: tunnel --url http://mantisbt:80
+    depends_on:
+      - mantisbt
+    networks:
+      - mantis_network
+    restart: unless-stopped
+
+networks:
+  mantis_network:
+    driver: bridge
