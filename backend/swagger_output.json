@@ -1,0 +1,205 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API de Futbol Reservas",
+    "description": "Documentación de la API para la gestión de reservas de canchas de fútbol.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "Canchas",
+      "description": "Operaciones relacionadas con las canchas."
+    },
+    {
+      "name": "Clientes",
+      "description": "Operaciones relacionadas con los clientes."
+    },
+    {
+      "name": "Encargados",
+      "description": "Operaciones relacionadas con los encargados."
+    },
+    {
+      "name": "Horarios",
+      "description": "Operaciones relacionadas con los horarios."
+    },
+    {
+      "name": "Pagos",
+      "description": "Operaciones relacionadas con los pagos."
+    },
+    {
+      "name": "Reservas",
+      "description": "Operaciones relacionadas con las reservas."
+    },
+    {
+      "name": "Usuarios",
+      "description": "Operaciones relacionadas con los usuarios."
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {},
+  "definitions": {
+    "Cancha": {
+      "type": "object",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "example": "Fútbol 5"
+        },
+        "ubicacion": {
+          "type": "string",
+          "example": "Av. Siempre Viva 123"
+        },
+        "dimensiones": {
+          "type": "string",
+          "example": "40x20"
+        },
+        "imagen": {
+          "type": "string",
+          "example": "http://ejemplo.com/imagen.jpg"
+        },
+        "estado": {
+          "type": "string",
+          "example": "disponible"
+        }
+      }
+    },
+    "Cliente": {
+      "type": "object",
+      "properties": {
+        "nombre": {
+          "type": "string",
+          "example": "Juan"
+        },
+        "apellido": {
+          "type": "string",
+          "example": "Pérez"
+        },
+        "correo": {
+          "type": "string",
+          "example": "juan@mail.com"
+        },
+        "contraseña": {
+          "type": "string",
+          "example": "123456"
+        },
+        "telefono": {
+          "type": "string",
+          "example": "123456789"
+        },
+        "antecedente": {
+          "type": "string",
+          "example": "Sin antecedentes"
+        }
+      }
+    },
+    "Encargado": {
+      "type": "object",
+      "properties": {
+        "nombre": {
+          "type": "string",
+          "example": "Pedro"
+        },
+        "apellido": {
+          "type": "string",
+          "example": "Gómez"
+        },
+        "correo": {
+          "type": "string",
+          "example": "pedro@mail.com"
+        },
+        "contraseña": {
+          "type": "string",
+          "example": "abcdef"
+        },
+        "legajo": {
+          "type": "string",
+          "example": "E123"
+        }
+      }
+    },
+    "Horario": {
+      "type": "object",
+      "properties": {
+        "fecha": {
+          "type": "string",
+          "example": "2025-06-13T00:00:00.000Z"
+        },
+        "horaInicio": {
+          "type": "string",
+          "example": "14:00"
+        },
+        "horaFin": {
+          "type": "string",
+          "example": "15:00"
+        },
+        "estado": {
+          "type": "string",
+          "example": "disponible"
+        }
+      }
+    },
+    "Pago": {
+      "type": "object",
+      "properties": {
+        "importeTotal": {
+          "type": "number",
+          "example": 1000
+        },
+        "importePendiente": {
+          "type": "number",
+          "example": 500
+        },
+        "estado": {
+          "type": "string",
+          "example": "pendiente"
+        }
+      }
+    },
+    "Reserva": {
+      "type": "object",
+      "properties": {
+        "horarioReservado": {
+          "type": "string",
+          "example": "60c72b2f9b1e8e001c8e4b8a"
+        },
+        "cancha": {
+          "type": "string",
+          "example": "60c72b2f9b1e8e001c8e4b8b"
+        },
+        "cliente": {
+          "type": "string",
+          "example": "60c72b2f9b1e8e001c8e4b8c"
+        },
+        "pago": {
+          "type": "string",
+          "example": "60c72b2f9b1e8e001c8e4b8d"
+        }
+      }
+    },
+    "Usuario": {
+      "type": "object",
+      "properties": {
+        "nombre": {
+          "type": "string",
+          "example": "Usuario"
+        },
+        "apellido": {
+          "type": "string",
+          "example": "Apellido"
+        },
+        "correo": {
+          "type": "string",
+          "example": "usuario@mail.com"
+        },
+        "contraseña": {
+          "type": "string",
+          "example": "clave123"
+        }
+      }
+    }
+  }
+}
