@@ -1,33 +1,29 @@
 // backend-hia/seed_clientes.js
- // backend-hia/seed_clientes.js
 require('dotenv').config(); 
 
 const mongoose = require('mongoose');
-// IMPORTAR FAKER.js
-const { faker } = require('@faker-js/faker/locale/es'); // o tu locale preferido
+const { faker } = require('@faker-js/faker/locale/es');
 
 const Cliente = require('./models/Cliente'); 
-const connectDB = require('./config/database'); 
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://mongo:27017/nombre_de_tu_db';
+// --- CONFIGURACIÓN OPTIMIZADA ---
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://devuser:devpass@mongo-primary:27017/mi_app_db?authSource=admin';
 const NUM_CLIENTES = 500000;
+const BATCH_SIZE = 1000; // Lotes pequeños para evitar desconexiones
 
 function generarCliente(index) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     
     return {
-        // Campos requeridos por el esquema Usuario/Cliente:
         nombre: firstName,
-        apellido: lastName, // ¡Campo que faltaba!
-        correo: faker.internet.email({
+        apellido: lastName,
+        correo: `${faker.internet.email({
             firstName: firstName, 
             lastName: lastName,
             provider: 'ficticiodev.com'
-        }), // Campo que faltaba (era 'email' antes)
-        contraseña: faker.internet.password({ length: 12 }), // Campo requerido si proveedor es 'manual'
-        
-        // Campos para el Discriminator (Cliente)
+        })}_${index}`, // Agregar índice para evitar duplicados
+        contraseña: faker.internet.password({ length: 12 }), 
         proveedor: 'manual', 
         tipo: 'Cliente',
         telefono: faker.phone.number('########'),
@@ -37,37 +33,82 @@ function generarCliente(index) {
     };
 }
 
-// ... (El resto del script seedClientes() permanece igual)
-
 async function seedClientes() {
+    const start = Date.now();
+    let insertedCount = 0;
+    
     try {
-        // Conexión a la base de datos (usando la variable de entorno)
-        await mongoose.connect(MONGODB_URI);
+        // Conexión con timeouts extendidos
+        await mongoose.connect(MONGODB_URI, {
+            socketTimeoutMS: 300000,      // 5 minutos
+            serverSelectionTimeoutMS: 60000,  // 1 minuto
+            maxPoolSize: 50,
+            minPoolSize: 10
+        });
+        
         console.log("🟢 Conectado a MongoDB para seeding.");
 
-        // 1. Limpiar colecciones (opcional, para empezar de cero)
+        // Eventos de monitoreo
+        mongoose.connection.on('disconnected', () => {
+            console.log('\n⚠️  MongoDB desconectado');
+        });
+
+        mongoose.connection.on('error', (err) => {
+            console.error('\n❌ Error de conexión:', err.message);
+        });
+
+        // 1. Limpiar colecciones
         await Cliente.deleteMany({});
         console.log("Base de datos de Clientes limpiada.");
 
-        // 2. Generar y guardar los clientes
-        const clientes = [];
+        // 2. Inserción en lotes con pausas
+        let currentBatch = [];
+        console.log(`\n⚙️  Iniciando inserción de ${NUM_CLIENTES.toLocaleString()} clientes en lotes de ${BATCH_SIZE}...`);
+
         for (let i = 1; i <= NUM_CLIENTES; i++) {
-            clientes.push(generarCliente(i));
+            currentBatch.push(generarCliente(i));
+
+            // Insertar cuando el lote está lleno o es el último registro
+            if (currentBatch.length === BATCH_SIZE || i === NUM_CLIENTES) {
+                
+                await Cliente.insertMany(currentBatch, { 
+                    ordered: false,
+                    writeConcern: { w: 1 }  // Solo espera confirmación del primario
+                });
+                
+                insertedCount += currentBatch.length;
+                
+                // Mostrar progreso
+                process.stdout.write(`\r[${new Date().toLocaleTimeString('es-ES')}] Insertados: ${insertedCount.toLocaleString()} / ${NUM_CLIENTES.toLocaleString()} (${((insertedCount / NUM_CLIENTES) * 100).toFixed(2)}%)`);
+                
+                currentBatch = [];
+                
+                // Pausa cada 50,000 registros para dar respiro a MongoDB
+                if (insertedCount % 50000 === 0 && insertedCount < NUM_CLIENTES) {
+                    process.stdout.write(' - Pausa de 2 segundos...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
         }
 
-        console.log(`Iniciando inserción de ${NUM_CLIENTES} clientes. Esto puede tardar...`);
-        
-        // Usar insertMany para una inserción masiva eficiente
-        await Cliente.insertMany(clientes);
-        
-        console.log(`✅ Éxito: ${NUM_CLIENTES} clientes insertados.`);
+        console.log('\n🎉 Proceso de Seeding Finalizado.');
 
     } catch (error) {
-        console.error("❌ Error en el seeding de la base de datos:", error);
-        process.exit(1);
+        console.error("\n❌ Error:", error.message);
+        
+        // Contar cuántos se insertaron antes del error
+        try {
+            insertedCount = await Cliente.countDocuments();
+            console.log(`📊 Documentos en DB: ${insertedCount.toLocaleString()}`);
+        } catch (e) {
+            console.log("No se pudo contar documentos");
+        }
     } finally {
+        const duration = (Date.now() - start) / 1000;
         await mongoose.connection.close();
-        console.log("Conexión a MongoDB cerrada.");
+        console.log(`\n🏁 Total final insertado: ${insertedCount.toLocaleString()} Clientes.`);
+        console.log(`⏱️  Tiempo total: ${duration.toFixed(2)} segundos (${(duration / 60).toFixed(2)} minutos).`);
+        console.log("🚪 Conexión a MongoDB cerrada.");
         process.exit(0);
     }
 }
