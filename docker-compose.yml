@@ -1,0 +1,265 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # NODO PRIMARIO (MASTER) DE MONGODB
+  # ========================================
+  mongo-primary:
+    image: mongo:latest
+    container_name: mongodb_primary_hia
+    restart: always
+    hostname: mongo-primary
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_primary_data:/data/db
+      - mongo_primary_config:/data/configdb
+    environment:
+      MONGO_INITDB_DATABASE: mi_app_db
+    command: mongod --replSet rs0 --bind_ip_all --wiredTigerCacheSizeGB 2
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+          cpus: '2.0'
+        reservations:
+          memory: 2g
+          cpus: '1.0'
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # ========================================
+  # NODO SECUNDARIO 1 (RÉPLICA)
+  # ========================================
+  mongo-secondary1:
+    image: mongo:latest
+    container_name: mongodb_secondary1_hia
+    restart: always
+    hostname: mongo-secondary1
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_secondary1_data:/data/db
+      - mongo_secondary1_config:/data/configdb
+    command: mongod --replSet rs0 --bind_ip_all --wiredTigerCacheSizeGB 1
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.0'
+        reservations:
+          memory: 1g
+          cpus: '0.5'
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo-primary
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # ========================================
+  # NODO SECUNDARIO 2 (RÉPLICA)
+  # ========================================
+  mongo-secondary2:
+    image: mongo:latest
+    container_name: mongodb_secondary2_hia
+    restart: always
+    hostname: mongo-secondary2
+    ports:
+      - "27019:27017"
+    volumes:
+      - mongo_secondary2_data:/data/db
+      - mongo_secondary2_config:/data/configdb
+    command: mongod --replSet rs0 --bind_ip_all --wiredTigerCacheSizeGB 1
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.0'
+        reservations:
+          memory: 1g
+          cpus: '0.5'
+    networks:
+      - mongo-cluster
+    depends_on:
+      - mongo-primary
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  # ========================================
+  # SERVICIO DE INICIALIZACIÓN DEL REPLICA SET
+  # ========================================
+  mongo-setup:
+    image: mongo:latest
+    container_name: mongodb_setup_hia
+    restart: "no"
+    networks:
+      - mongo-cluster
+    depends_on:
+      mongo-primary:
+        condition: service_healthy
+      mongo-secondary1:
+        condition: service_healthy
+      mongo-secondary2:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+        echo '⏳ Esperando 10 segundos iniciales...';
+        sleep 10;
+        
+        echo '🔧 Paso 1: Iniciando Replica Set...';
+        mongosh --host mongo-primary:27017 --eval '
+          try {
+            var config = {
+              _id: \"rs0\",
+              members: [
+                { _id: 0, host: \"mongo-primary:27017\", priority: 2 },
+                { _id: 1, host: \"mongo-secondary1:27017\", priority: 1 },
+                { _id: 2, host: \"mongo-secondary2:27017\", priority: 1 }
+              ]
+            };
+            rs.initiate(config);
+            print(\"✅ Replica Set iniciado\");
+          } catch(e) {
+            if (e.codeName === \"AlreadyInitialized\") {
+              print(\"⚠️ Ya inicializado\");
+            }
+          }
+        ' || true;
+        
+        echo '⏳ Esperando 40 segundos para elección de primario...';
+        sleep 40;
+        
+        echo '🔧 Paso 2: Creando usuario (esperando primario)...';
+        for i in {1..10}; do
+          mongosh --host mongo-primary:27017 --eval '
+            db = db.getSiblingDB(\"admin\");
+            db.createUser({
+              user: \"devuser\",
+              pwd: \"devpass\",
+              roles: [{role: \"root\", db: \"admin\"}]
+            });
+          ' && break || echo \"Intento \$i/10 falló, reintentando en 3s...\";
+          sleep 3;
+        done
+        
+        echo '✅ Setup completado';
+      "
+
+  # ========================================
+  # SERVICIO DE BACKEND (NODEJS/EXPRESS)
+  # ========================================
+  backend:
+    build: 
+      context: ./backend
+    container_name: backend_hia_service
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
+      NODE_ENV: production
+    depends_on:
+      mongo-setup:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.5'
+        reservations:
+          memory: 1g
+          cpus: '0.5'
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - mongo-cluster
+
+  # ========================================
+  # SERVICIO DE FRONTEND (NGINX)
+  # ========================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/app  # Redirige el volumen al directorio frontend para mapear correctamente
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+        reservations:
+          memory: 512m
+          cpus: '0.25'
+    networks:
+      - mongo-cluster
+  # ========================================
+  # CLIENTE VISUAL (MONGO EXPRESS)
+  # ========================================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo_express_client_hia
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://devuser:devpass@mongo-primary:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password123
+    depends_on:
+      mongo-setup:
+        condition: service_completed_successfully
+    networks:
+      - mongo-cluster
+
+# ========================================
+# VOLÚMENES PARA PERSISTENCIA
+# ========================================
+volumes:
+  mongo_primary_data:
+    driver: local
+  mongo_primary_config:
+    driver: local
+  mongo_secondary1_data:
+    driver: local
+  mongo_secondary1_config:
+    driver: local
+  mongo_secondary2_data:
+    driver: local
+  mongo_secondary2_config:
+    driver: local
+
+# ========================================
+# RED PARA EL CLUSTER
+# ========================================
+networks:
+  mongo-cluster:
+    driver: bridge
