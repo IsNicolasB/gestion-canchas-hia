@@ -18,6 +18,7 @@ const PagoRoutes = require('./routes/PagoRoutes');
 const ReservaRoutes = require('./routes/ReservaRoutes');
 const UsuarioRoutes = require('./routes/UsuarioRoutes');
 const MetricsRoutes = require('./routes/MetricsRoutes');
+const healthRouter = require('./routes/health');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -101,6 +102,7 @@ app.use('/pagos', PagoRoutes);
 app.use('/reservas', ReservaRoutes);
 app.use('/usuarios', UsuarioRoutes);
 app.use('/metrics', MetricsRoutes);
+app.use('/api', healthRouter);
 
 // Middleware de manejo de errores (debe ir al final)
 //app.use(errorHandler);
