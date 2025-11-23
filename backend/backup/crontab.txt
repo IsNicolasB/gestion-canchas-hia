@@ -1,0 +1,16 @@
+# Crontab para backups automáticos de MongoDB
+# Formato: minuto hora día mes día_semana comando
+
+# Backup diario a las 2:00 AM
+0 2 * * * /backup/backup.sh >> /backup/backup.log 2>&1
+
+# Backup cada 6 horas (descomenta si necesitas backups más frecuentes)
+# 0 */6 * * * /backup/backup.sh >> /backup/backup.log 2>&1
+
+# Backup cada hora (descomenta para pruebas o alta frecuencia)
+# 0 * * * * /backup/backup.sh >> /backup/backup.log 2>&1
+
+# Limpieza de logs antiguos cada domingo a las 3:00 AM
+0 3 * * 0 find /backup -name "*.log" -mtime +30 -delete
+
+# Línea en blanco requerida al final del archivo
