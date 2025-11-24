@@ -1,0 +1,36 @@
+# .gitignore para Nextcloud
+
+# Archivos de entorno (contienen contraseñas)
+.env
+.env.local
+.env.*.local
+
+# Datos de bases de datos (demasiado voluminosos y privados)
+postgres_data/
+data/
+
+# Backups y dumps
+*.sql
+*.sql.gz
+*.dump
+backups/
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker volumes
+node_modules/
