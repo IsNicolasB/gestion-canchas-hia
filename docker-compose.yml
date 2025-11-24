@@ -161,64 +161,29 @@ services:
       "
 
   # ========================================
-  # SERVICIO DE BACKEND (NODEJS/EXPRESS)
+  # SERVICIO DE APPLICATION (NGINX + BACKEND UNIFICADO)
   # ========================================
-  backend:
-    build: 
-      context: ./backend
-    container_name: backend_hia_service
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
-      NODE_ENV: production
-    depends_on:
-      mongo-setup:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: '1.5'
-        reservations:
-          memory: 1g
-          cpus: '0.5'
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
-    networks:
-      - mongo-cluster
-
-  # ========================================
-  # SERVICIO DE FRONTEND (NGINX)
-  # ========================================
-  frontend:
+  app:
     build:
-      context: ./frontend
       dockerfile: Dockerfile
-    container_name: frontend
+    #image: nicoburgos/gestion-canchas:latest  #Usa la imagen unificada del Dockerfile raíz
+    container_name: app
     restart: always
     ports:
       - "8080:80"
-    volumes:
-      - ./frontend:/app  # Redirige el volumen al directorio frontend para mapear correctamente
-      - /app/node_modules
     environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-    stdin_open: true
-    tty: true
+      - NODE_ENV=production  # Cambiado a production para la imagen unificada
     depends_on:
-      - backend
+      mongo-setup:
+        condition: service_completed_successfully  # Depende de MongoDB
     deploy:
       resources:
         limits:
+          memory: 3g  # Aumentado para incluir backend
+          cpus: '1.0'
+        reservations:
           memory: 1g
           cpus: '0.5'
-        reservations:
-          memory: 512m
-          cpus: '0.25'
     networks:
       - mongo-cluster
   # ========================================
