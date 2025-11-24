@@ -166,7 +166,7 @@ services:
   backend:
     build: 
       context: ./
-    container_name: backend_hia_service
+    container_name: backend
     restart: always
     ports:
       - "3000:3000"
@@ -184,9 +184,6 @@ services:
         reservations:
           memory: 1g
           cpus: '0.5'
-    volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
     networks:
       - mongo-cluster
 

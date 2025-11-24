@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   # ========================================
@@ -161,29 +160,56 @@ services:
       "
 
   # ========================================
-  # SERVICIO DE APPLICATION (NGINX + BACKEND UNIFICADO)
+  # SERVICIO DE BACKEND (NODEJS/EXPRESS)
   # ========================================
-  app:
+  backend:
+    #image: nicoburgos/gestion-canchas-backend:latest
     build:
+      context: backend/
       dockerfile: Dockerfile
-    #image: nicoburgos/gestion-canchas:latest  #Usa la imagen unificada del Dockerfile raíz
-    container_name: app
+    container_name: backend
     restart: always
     ports:
-      - "8080:80"
+      - "3000:3000"
     environment:
-      - NODE_ENV=production  # Cambiado a production para la imagen unificada
+      MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
+      NODE_ENV: production
     depends_on:
       mongo-setup:
-        condition: service_completed_successfully  # Depende de MongoDB
+        condition: service_completed_successfully
     deploy:
       resources:
         limits:
-          memory: 3g  # Aumentado para incluir backend
-          cpus: '1.0'
+          memory: 2g
+          cpus: '1.5'
         reservations:
           memory: 1g
           cpus: '0.5'
+    networks:
+      - mongo-cluster
+
+  # ========================================
+  # SERVICIO DE FRONTEND (NGINX)
+  # ========================================
+  frontend:
+    #image: nicoburgos/gestion-canchas-frontend:latest
+    build:
+      context: frontend/
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+        reservations:
+          memory: 512m
+          cpus: '0.25'
     networks:
       - mongo-cluster
   # ========================================
