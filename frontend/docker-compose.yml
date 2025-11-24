@@ -2,9 +2,9 @@ services:
   frontend:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
-      - "4200:4200"
+      - "8080:80"
     volumes:
       - .:/app
       - /app/node_modules

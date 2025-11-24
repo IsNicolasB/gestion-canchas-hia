@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+dist/
+build/
+out/
+
+# Logs
+*.log
+logs/
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.secrets
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Docker (optional, if you want to ignore overrides)
+# docker-compose.override.yml
+
+# Angular specific
+.angular/
+coverage/
+
+# MongoDB data (if not using volumes)
+# mongo_data/
+
+# Other
+.nyc_output/
+.cache/
+*.tgz
+*.tar.gz

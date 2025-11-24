@@ -1,26 +1,29 @@
-# Dockerfile.dev (frontend - Desarrollo)
-FROM node:18-alpine
+# Dockerfile (frontend - Producción)
+FROM node:18-alpine AS build
 
-# Establece el directorio de trabajo
 WORKDIR /app
 
-# Deshabilita el análisis de Angular CLI
 ENV NG_CLI_ANALYTICS=false
 
-# Copia los archivos de dependencias
 COPY package*.json ./
 
-# Instala las dependencias
 RUN npm ci
 
-# Configura Angular CLI para no preguntar por analytics
-RUN npx ng config -g cli.analytics false
-
-# Copia el resto de la aplicación
 COPY . .
 
-# Expone el puerto de desarrollo de Angular
-EXPOSE 4200
+RUN npm run build
 
-# Comando para iniciar la aplicación en modo desarrollo
-CMD ["npx", "ng", "serve", "--host", "0.0.0.0", "--disable-host-check"]
+RUN ls -la /app/dist/football/browser/
+
+
+FROM nginx:alpine
+
+COPY --from=build /app/dist/football/browser /usr/share/nginx/html
+
+RUN ls -la /usr/share/nginx/html
+
+COPY nginx-custom.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

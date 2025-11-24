@@ -1,0 +1,4 @@
+Fecha de creación: Sun Nov 23 16:42:28 -03 2025
+Host: mongo-primary:27017
+Base de datos: Todas
+Formato: Comprimido (gzip)

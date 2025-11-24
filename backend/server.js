@@ -1,9 +1,8 @@
 // server.js - Archivo principal del servidor
-//require('dotenv').config();
 require('./cron/enviarRecordatorioNodeMailer');
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./config/database');
+const { connectDB } = require('./config/database'); // ✅ Importar correctamente
 //const errorHandler = require('./middleware/errorHandler');
 
 // Swagger
@@ -18,6 +17,8 @@ const HorarioRoutes = require('./routes/HorarioRoutes');
 const PagoRoutes = require('./routes/PagoRoutes');
 const ReservaRoutes = require('./routes/ReservaRoutes');
 const UsuarioRoutes = require('./routes/UsuarioRoutes');
+const MetricsRoutes = require('./routes/MetricsRoutes');
+const healthRouter = require('./routes/health');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -100,6 +101,8 @@ app.use('/horarios', HorarioRoutes);
 app.use('/pagos', PagoRoutes);
 app.use('/reservas', ReservaRoutes);
 app.use('/usuarios', UsuarioRoutes);
+app.use('/metrics', MetricsRoutes);
+app.use('/api', healthRouter);
 
 // Middleware de manejo de errores (debe ir al final)
 //app.use(errorHandler);
