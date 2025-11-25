@@ -270,6 +270,95 @@ tbody tr:hover {
   animation: fadeInUp 1s ease-out 0.2s both;
 }
 
+/* ...existing code... */
+
+/* Estilos mejorados para el filtro */
+
+.form-select, .form-control {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.input-group-text {
+  transition: background-color 0.3s ease;
+}
+
+/* ...existing code... */
+
+/* Estilos para la paginación */
+.pagination {
+  --bs-pagination-padding-x: 0.8rem;
+  --bs-pagination-padding-y: 0.5rem;
+  --bs-pagination-font-size: 0.9rem;
+}
+
+.page-link {
+  transition: all 0.3s ease;
+  min-width: 40px;
+  text-align: center;
+  border-radius: 50% !important;
+  margin: 0 3px;
+  font-weight: 500;
+}
+
+.page-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos personalizados para paginación activa */
+.page-link.active-green {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+.page-link.active-green:hover {
+  background-color: #157347 !important;
+  border-color: #146c43 !important;
+}
+
+.page-link:focus {
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+  outline: none;
+}
+
+.page-item.disabled .page-link {
+  opacity: 0.6;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 576px) {
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .page-item {
+    margin: 2px;
+  }
+  
+  .page-link {
+    min-width: 36px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ajustes responsivos para filtros */
+@media (max-width: 768px) {
+  .card-body .row .col-md-3,
+  .card-body .row .col-md-2 {
+    margin-bottom: 1rem;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;

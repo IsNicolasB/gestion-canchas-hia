@@ -12,7 +12,6 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
 }
 
 .footer h5 {
@@ -43,6 +42,15 @@
 .footer a:hover {
   color: #ffffff;
   transform: translateX(5px);
+}
+
+.footer-link {
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.footer-link:hover {
+  color: #ffc107 !important;
+  transform: translateY(-2px);
 }
 
 .social-icons a {
@@ -76,5 +84,28 @@
 
 .footer .list-unstyled li:hover {
   transform: translateX(5px);
+}
+
+hr.bg-white-50 {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.fw-bold {
+  font-weight: 600;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .footer .row .col-md-6 {
+    text-align: center !important;
+  }
+  .footer-link {
+    display: block;
+    margin-bottom: 0.5rem;
+  }
 }
 

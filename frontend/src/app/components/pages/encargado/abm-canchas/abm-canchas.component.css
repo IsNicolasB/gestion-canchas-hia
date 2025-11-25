@@ -12,3 +12,87 @@
 .modal-title { color: #198754; font-weight: 600; }
 .bg-danger { background: #dc3545 !important; }
 .text-white { color: #fff !important; }
+
+.pagination .page-link {
+  color: #198754;
+}
+
+.pagination .page-link:hover {
+  background-color: #198754;
+  color: white;
+}
+
+.pagination .active .page-link {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+/* Estilos para la paginación mejorada */
+.pagination {
+  --bs-pagination-padding-x: 0.8rem;
+  --bs-pagination-padding-y: 0.5rem;
+  --bs-pagination-font-size: 0.9rem;
+}
+
+.page-link {
+  transition: all 0.3s ease;
+  min-width: 40px;
+  text-align: center;
+  border-radius: 50% !important;
+  margin: 0 3px;
+  font-weight: 500;
+  color: #198754;
+}
+
+.page-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos personalizados para paginación activa */
+.page-link.active-green {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+.page-link.active-green:hover {
+  background-color: #157347 !important;
+  border-color: #146c43 !important;
+}
+
+.page-link:focus {
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+  outline: none;
+}
+
+.page-item.disabled .page-link {
+  opacity: 0.6;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 576px) {
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .page-item {
+    margin: 2px;
+  }
+  
+  .page-link {
+    min-width: 36px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .pagination {
+    flex-wrap: wrap;
+  }
+}
