@@ -56,7 +56,10 @@ const obtenerClientes = async (req, res, next) => {
     }
   */
   try {
-    const clientes = await Cliente.find();
+    // Optimización: .lean() para queries de solo lectura + proyección de campos necesarios
+    const clientes = await Cliente.find()
+      .select('nombre apellido correo telefono tipo')
+      .lean();
     res.status(200).json({
       success: true,
       message: 'Clientes recuperados exitosamente',
@@ -81,7 +84,10 @@ const obtenerClientePorId = async (req, res, next) => {
     #swagger.responses[404] = { description: 'Cliente no encontrado' }
   */
   try {
-    const cliente = await Cliente.findById(req.params.id);
+    // Optimización: .lean() para queries de solo lectura
+    const cliente = await Cliente.findById(req.params.id)
+      .select('nombre apellido correo telefono tipo antecedentes')
+      .lean();
     if (!cliente) {
       return res.status(404).json({
         success: false,
@@ -179,14 +185,38 @@ const buscarClientePorNombreApellido = async (req, res, next) => {
   */
   try {
     const { nombre = '', apellido = '' } = req.query;
-    const query = {
-      nombre: { $regex: nombre, $options: 'i' },
-      apellido: { $regex: apellido, $options: 'i' }
-    };
-    const clientes = await Cliente.find(query);
+    
+    // Construir query dinámica solo con campos proporcionados
+    const query = { tipo: 'Cliente' };
+    
+    // OPTIMIZACIÓN CRÍTICA: Anclar regex con ^ para aprovechar índices
+    if (nombre) {
+      query.nombre = { $regex: '^' + nombre, $options: 'i' };
+    }
+    if (apellido) {
+      query.apellido = { $regex: '^' + apellido, $options: 'i' };
+    }
+    
+    // Si ambos están presentes, forzar índice correcto y usar .lean()
+    let clientesQuery = Cliente.find(query)
+      .select('nombre apellido correo telefono tipo')
+      .lean();
+    
+    // Forzar índice correcto cuando se busca por apellido
+    if (apellido && nombre) {
+      clientesQuery = clientesQuery.hint('idx_usuarios_tipo_apellido');
+    } else if (apellido) {
+      clientesQuery = clientesQuery.hint('idx_usuarios_tipo_apellido');
+    } else if (nombre) {
+      clientesQuery = clientesQuery.hint('idx_usuarios_tipo_nombre');
+    }
+    
+    const clientes = await clientesQuery;
+    
     res.status(200).json({
       success: true,
       message: 'Clientes encontrados',
+      count: clientes.length,
       data: clientes
     });
   } catch (error) {

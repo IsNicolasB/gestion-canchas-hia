@@ -43,11 +43,14 @@ const obtenerReservas = async (req, res, next) => {
     }
   */
   try {
+    // Optimización: limitar populate a campos necesarios y usar .lean()
     const reservas = await Reserva.find()
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('cliente')
-      .populate('pago');
+      .populate('horariosReservados', 'horaInicio horaFin estado')
+      .populate('cancha', 'nombre tipo')
+      .populate('cliente', 'nombre apellido telefono')
+      .populate('pago', 'importeTotal estado')
+      .select('fecha horaInicio horaFin cancha cliente pago horariosReservados')
+      .lean();
     res.status(200).json({
       success: true,
       message: 'Reservas recuperadas exitosamente',
@@ -72,11 +75,13 @@ const obtenerReservaPorId = async (req, res, next) => {
     #swagger.responses[404] = { description: 'Reserva no encontrada' }
   */
   try {
+    // Optimización: limitar populate a campos necesarios y usar .lean()
     const reserva = await Reserva.findById(req.params.id)
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('cliente')
-      .populate('pago');
+      .populate('horariosReservados', 'horaInicio horaFin estado')
+      .populate('cancha', 'nombre tipo ubicacion')
+      .populate('cliente', 'nombre apellido correo telefono')
+      .populate('pago', 'importeTotal importePendiente estado')
+      .lean();
     if (!reserva) {
       return res.status(404).json({
         success: false,
@@ -179,32 +184,27 @@ const obtenerReservasPorClienteYFecha = async (req, res, next) => {
       fecha = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     }
 
+    // Optimización: Anclar regex para aprovechar índices
     const clientes = await Cliente.find({
       $or: [
-        { nombre: { $regex: nombre, $options: 'i' } },
-        { apellido: { $regex: nombre, $options: 'i' } },
-        { 
-          $expr: {
-            $regexMatch: {
-              input: { $concat: ["$nombre", " ", "$apellido"] },
-              regex: nombre,
-              options: 'i'
-            }
-          }
-        }
+        { nombre: { $regex: '^' + nombre, $options: 'i' } },
+        { apellido: { $regex: '^' + nombre, $options: 'i' } }
       ]
-    }).select('_id');
+    }).select('_id').lean();
 
     const clienteIds = clientes.map(c => c._id);
 
+    // Optimización: populate limitado y .lean()
     const reservas = await Reserva.find({
       fecha,
       cliente: { $in: clienteIds }
     })
     .populate('cliente', 'nombre apellido telefono')
-    .populate('cancha', 'nombre')
-    .populate('pago')
-    .sort({ horaInicio: 1 });
+    .populate('cancha', 'nombre tipo')
+    .populate('pago', 'importeTotal estado')
+    .select('fecha horaInicio horaFin cliente cancha pago')
+    .sort({ horaInicio: 1 })
+    .lean();
 
     res.status(200).json({
       success: true,
@@ -229,11 +229,14 @@ const obtenerReservasPorCliente = async (req, res, next) => {
   */
   try {
     const { clienteId } = req.params;
+    // Optimización: populate limitado, .lean() y aprovecha índice idx_reserva_cliente_fecha
     const reservas = await Reserva.find({ cliente: clienteId })
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('pago')
-      .sort({ fecha: -1 });
+      .populate('horariosReservados', 'horaInicio horaFin')
+      .populate('cancha', 'nombre tipo')
+      .populate('pago', 'importeTotal estado')
+      .select('fecha horaInicio horaFin cancha pago horariosReservados')
+      .sort({ fecha: -1 })
+      .lean();
     res.status(200).json(reservas);
   } catch (error) {
     next(error);
