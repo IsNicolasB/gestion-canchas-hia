@@ -1,5 +1,6 @@
 const Reserva = require('../models/Reserva');
 const Cliente = require('../models/Cliente');
+const { invalidateCache } = require('../middleware/cacheMiddleware');
 
 // Crear una nueva reserva (POST)
 const crearReserva = async (req, res, next) => {
@@ -21,6 +22,11 @@ const crearReserva = async (req, res, next) => {
   try {
     const nuevaReserva = new Reserva(req.body);
     const reservaGuardada = await nuevaReserva.save();
+    
+    // Invalidar caché relacionado con reservas y horarios
+    await invalidateCache('cache:/reservas*');
+    await invalidateCache('cache:/horarios*');
+    
     res.status(201).json({
       success: true,
       message: 'Reserva creada exitosamente',
