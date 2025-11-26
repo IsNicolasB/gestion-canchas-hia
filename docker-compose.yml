@@ -159,6 +159,28 @@ services:
         echo '✅ Setup completado';
       "
 
+  # ============================================
+  # FAIL2BAN - Bloqueo automático de IPs
+  # ============================================
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: fail2ban
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - F2B_LOG_LEVEL=INFO
+    volumes:
+      - ./security/fail2ban/data:/data
+      - ./security/fail2ban/jail.d:/data/jail.d:ro
+      - ./security/fail2ban/filter.d:/data/filter.d:ro
+      - ./logs/nginx:/var/log/nginx:ro
+    network_mode: "host"
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
   # ========================================
   # SERVICIO DE BACKEND (NODEJS/EXPRESS)
   # ========================================
@@ -169,8 +191,8 @@ services:
       dockerfile: Dockerfile
     container_name: backend
     restart: always
-    ports:
-      - "3000:3000"
+    volumes:
+      - ./logs/nginx:/var/log/nginx
     environment:
       MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
       NODE_ENV: production
@@ -199,7 +221,7 @@ services:
     container_name: frontend
     restart: always
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - backend
     deploy:
@@ -212,6 +234,7 @@ services:
           cpus: '0.25'
     networks:
       - mongo-cluster
+
   # ========================================
   # CLIENTE VISUAL (MONGO EXPRESS)
   # ========================================
