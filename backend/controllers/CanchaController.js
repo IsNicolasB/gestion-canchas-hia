@@ -1,4 +1,5 @@
 const Cancha = require('../models/Cancha');
+const { invalidateCache } = require('../middleware/cacheMiddleware');
 
 // Crear una nueva cancha (POST)
 const crearCancha = async (req, res, next) => {
@@ -20,6 +21,10 @@ const crearCancha = async (req, res, next) => {
   try {
     const nuevaCancha = new Cancha(req.body);
     const canchaGuardada = await nuevaCancha.save();
+    
+    // Invalidar caché de canchas
+    await invalidateCache('cache:/canchas*');
+    
     res.status(201).json({
       success: true,
       message: 'Cancha creada exitosamente',
@@ -114,6 +119,11 @@ const actualizarCancha = async (req, res, next) => {
         message: 'Cancha no encontrada'
       });
     }
+    
+    // Invalidar caché de canchas
+    await invalidateCache('cache:/canchas*');
+    await invalidateCache('cache:/horarios*'); // Horarios también dependen de canchas
+    
     res.status(200).json({
       success: true,
       message: 'Cancha actualizada exitosamente',
@@ -141,6 +151,12 @@ const eliminarCancha = async (req, res, next) => {
         message: 'Cancha no encontrada'
       });
     }
+    
+    // Invalidar caché relacionado
+    await invalidateCache('cache:/canchas*');
+    await invalidateCache('cache:/horarios*');
+    await invalidateCache('cache:/reservas*');
+    
     res.status(200).json({
       success: true,
       message: 'Cancha eliminada exitosamente',

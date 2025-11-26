@@ -17,6 +17,10 @@ export class AbmCanchasComponent implements OnInit {
   error: string | null = null;
   tipoUsuario: string = '';
 
+  // Paginación
+  pageSize: number = 10;
+  currentPage: number = 1;
+
   showAddModal = false;
   showEditModal = false;
   showDeleteModal = false;
@@ -49,6 +53,22 @@ export class AbmCanchasComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  // Agrega getters y métodos para paginación
+  get totalPages(): number {
+    return Math.ceil(this.canchas.length / this.pageSize);
+  }
+
+  get canchasMostradas(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.canchas.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
   }
 
   abrirModalAgregar() {

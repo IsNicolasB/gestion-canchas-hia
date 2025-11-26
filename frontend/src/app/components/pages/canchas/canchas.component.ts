@@ -20,6 +20,19 @@ export class CanchasComponent implements OnInit {
   loading: boolean = false;
   error: string | null = null;
   tipoUsuario: string = '';
+  canchasFiltradas: any[] = []; // Nueva propiedad para canchas filtradas
+  canchasPaginadas: any[] = [];
+  pageSize: number = 6;
+  currentPage: number = 1;
+
+  // Filtros
+  filtroTipo: string = '';
+  filtroPrecioMin: number | null = null;
+  filtroPrecioMax: number | null = null;
+  filtroUbicacion: string = '';
+
+  // Opciones para dropdowns
+  tiposDisponibles: string[] = ['Fútbol 5', 'Fútbol 7', 'Fútbol 11'];
 
   selectedCancha: any = null;
   // Eliminado ABM: showAddModal, showEditModal, showDeleteModal, canchaAEliminar, nuevaCancha, nuevaImagen, editImagen, canchaEdit
@@ -98,7 +111,8 @@ export class CanchasComponent implements OnInit {
     this.error = null;
     this.canchasService.getCanchas().subscribe({
       next: (data: any) => {
-        this.canchas = data.data || []; // Asegura que sea un array
+        this.canchas = data.data || [];
+        this.aplicarFiltros(); // Aplicar filtros iniciales
         this.loading = false;
       },
       error: (err) => {
@@ -109,6 +123,7 @@ export class CanchasComponent implements OnInit {
     });
   }
 
+  
   verHorarios(cancha: any) {
     this.selectedCancha = cancha;
     this.setFechasLimite();
@@ -327,5 +342,43 @@ export class CanchasComponent implements OnInit {
     
     // Formatear resultado
     return horaFinal.toString().padStart(2, '0') + ':00';
+  }
+
+  aplicarFiltros(): void {
+    this.canchasFiltradas = this.canchas.filter(cancha => {
+      this.currentPage = 1; // Resetear a la primera página al aplicar filtros
+      const matchTipo = !this.filtroTipo || cancha.tipo === this.filtroTipo;
+      const matchPrecioMin = this.filtroPrecioMin === null || cancha.precioPorHora >= this.filtroPrecioMin;
+      const matchPrecioMax = this.filtroPrecioMax === null || cancha.precioPorHora <= this.filtroPrecioMax;
+      const matchUbicacion = !this.filtroUbicacion || cancha.ubicacion.toLowerCase().includes(this.filtroUbicacion.toLowerCase());
+      return matchTipo && matchPrecioMin && matchPrecioMax && matchUbicacion;
+    });
+  }
+
+  onFiltroChange(): void {
+    this.aplicarFiltros();
+  }
+
+  limpiarFiltros(): void {
+    this.filtroTipo = '';
+    this.filtroPrecioMin = null;
+    this.filtroPrecioMax = null;
+    this.filtroUbicacion = '';
+    this.aplicarFiltros();
+  }
+  
+  get totalPages(): number {
+    return Math.ceil(this.canchasFiltradas.length / this.pageSize);
+  }
+
+  get canchasMostradas(): any[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.canchasFiltradas.slice(start, start + this.pageSize);
+  }
+
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
   }
 }
