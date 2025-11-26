@@ -62,3 +62,8 @@ coverage/
 .cache/
 *.tgz
 *.tar.gz
+
+#certificates
+
+cert.pem
+key.pem
