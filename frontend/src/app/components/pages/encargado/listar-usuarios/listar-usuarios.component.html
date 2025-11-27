@@ -1,0 +1,99 @@
+<div class="body-container">
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-12">
+        <!-- Encabezado -->
+        <div class="mb-4">
+          <h2 class="mb-2 fw-bold text-green">
+            <i class="fas fa-users me-2"></i>Listado de clientes
+          </h2>
+                  <!-- Total de Clientes -->
+        <p class="text-muted mt-3">Total de clientes: <strong>{{ totalClientes }}</strong></p>
+        </div>
+
+        <!-- Tabla de clientes -->
+        <div class="card border-0 shadow-sm">
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-success" role="status"></div>
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger m-3">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
+          </div>
+
+          <div *ngIf="!loading && clientes.length > 0" class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th class="text-center">Nombre</th>
+                  <th class="text-center">Correo</th>
+                  <th class="text-center">Teléfono</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cliente of clientes" class="text-center">
+                  <td class="fw-bold">{{ cliente.nombre }} {{ cliente.apellido }}</td>
+                  <td>{{ cliente.correo }}</td>
+                  <td>{{ cliente.telefono || 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="!loading && clientes.length === 0 && !error" class="text-center py-5">
+            <p class="text-muted">No hay clientes disponibles.</p>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <nav *ngIf="totalPages > 1" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link border-0 shadow-sm rounded-pill mx-1" 
+                href="#" 
+                (click)="changePage(currentPage - 1); $event.preventDefault()">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+            </li>
+
+            <li class="page-item" *ngIf="paginasVisibles[0] > 1">
+              <a class="page-link border-0 shadow-sm rounded-pill mx-1" 
+                href="#" 
+                (click)="changePage(1); $event.preventDefault()">1</a>
+            </li>
+            <li class="page-item" *ngIf="paginasVisibles[0] > 2">
+              <span class="page-link border-0 mx-1">...</span>
+            </li>
+
+            <li class="page-item" *ngFor="let page of paginasVisibles" 
+                [class.active]="currentPage === page">
+              <a class="page-link border-0 shadow-sm rounded-pill mx-1" 
+                href="#" 
+                (click)="changePage(page); $event.preventDefault()"
+                [class.active-green]="currentPage === page">
+                {{ page }}
+              </a>
+            </li>
+
+            <li class="page-item" *ngIf="paginasVisibles[paginasVisibles.length - 1] < totalPages - 1">
+              <span class="page-link border-0 mx-1">...</span>
+            </li>
+            <li class="page-item" *ngIf="paginasVisibles[paginasVisibles.length - 1] < totalPages">
+              <a class="page-link border-0 shadow-sm rounded-pill mx-1" 
+                href="#" 
+                (click)="changePage(totalPages); $event.preventDefault()">{{ totalPages }}</a>
+            </li>
+
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link border-0 shadow-sm rounded-pill mx-1" 
+                href="#" 
+                (click)="changePage(currentPage + 1); $event.preventDefault()">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>

@@ -8,7 +8,7 @@ router.post('/', ClienteController.crearCliente);
 
 // GET con caché (búsquedas y listados)
 router.get('/buscar', cacheMiddleware(120), ClienteController.buscarClientePorNombreApellido); // 2 minutos
-router.get('/', cacheMiddleware(60), ClienteController.obtenerClientes); // 1 minuto
+router.get('/', ClienteController.obtenerClientes); // 1 minuto
 router.get('/:id', cacheMiddleware(300), ClienteController.obtenerClientePorId); // 5 minutos
 
 // PUT/DELETE no usan caché
