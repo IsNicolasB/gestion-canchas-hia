@@ -8,8 +8,6 @@ services:
     container_name: mongodb_primary_hia
     restart: always
     hostname: mongo-primary
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_primary_data:/data/db
       - mongo_primary_config:/data/configdb
@@ -26,6 +24,7 @@ services:
           cpus: '1.0'
     networks:
       - mongo-cluster
+      - internal-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -41,8 +40,6 @@ services:
     container_name: mongodb_secondary1_hia
     restart: always
     hostname: mongo-secondary1
-    ports:
-      - "27018:27017"
     volumes:
       - mongo_secondary1_data:/data/db
       - mongo_secondary1_config:/data/configdb
@@ -57,6 +54,7 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       - mongo-primary
     healthcheck:
@@ -74,8 +72,6 @@ services:
     container_name: mongodb_secondary2_hia
     restart: always
     hostname: mongo-secondary2
-    ports:
-      - "27019:27017"
     volumes:
       - mongo_secondary2_data:/data/db
       - mongo_secondary2_config:/data/configdb
@@ -90,6 +86,7 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       - mongo-primary
     healthcheck:
@@ -108,6 +105,7 @@ services:
     restart: "no"
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       mongo-primary:
         condition: service_healthy
@@ -197,6 +195,7 @@ services:
       - DISABLE_UPDATES=true
     networks:
       - mongo-cluster
+      - internal-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/ping"]
       interval: 30s
@@ -215,6 +214,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       pmm-server:
         condition: service_healthy
@@ -276,7 +276,6 @@ services:
           memory: 512m
           cpus: '0.5'
 
-
   frontend:
     build:
       context: frontend/
@@ -298,6 +297,7 @@ services:
           cpus: '0.25'
     networks:
       - mongo-cluster
+      - internal-network
 
   # ============================================
   # FAIL2BAN - Bloqueo automático de IPs
@@ -328,8 +328,6 @@ services:
     image: redis:7-alpine
     container_name: redis_hia
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     command: >
@@ -341,6 +339,7 @@ services:
       --loglevel notice
     networks:
       - mongo-cluster
+      - internal-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -434,6 +433,7 @@ services:
         '
       networks:
         - mongo-cluster
+        - internal-network
       deploy:
         resources:
           limits:
@@ -468,6 +468,7 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
 
   # ========================================
   # CLIENTE VISUAL (MONGO EXPRESS)
