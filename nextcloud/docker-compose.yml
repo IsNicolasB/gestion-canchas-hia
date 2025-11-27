@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: nextcloud
       POSTGRES_USER: nextcloud_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -19,7 +19,7 @@ services:
 
   # Nextcloud Server
   nextcloud:
-    image: nextcloud:latest
+    image: nextcloud:27
     container_name: nextcloud
     depends_on:
       nextcloud_db:

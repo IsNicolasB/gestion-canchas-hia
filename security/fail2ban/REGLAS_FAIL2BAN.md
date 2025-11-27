@@ -1,90 +1,69 @@
-# Reglas Fail2Ban para Nginx
+# Reglas personalizadas de Fail2Ban
 
-Este documento describe las reglas personalizadas de Fail2Ban utilizadas para proteger el entorno Nginx de Gestión Canchas HIA. Cada jail está diseñada para detectar y bloquear patrones de comportamiento malicioso o sospechoso en los logs de Nginx.
+Este archivo documenta las reglas personalizadas configuradas en `security/fail2ban/jail.d/custom.conf` para proteger el entorno mediante Fail2Ban y Nginx.
 
----
+## Reglas configuradas
 
-## Jails configuradas
-
-### 1. nginx-4xx
-- **Propósito:** Bloquea IPs que generan múltiples errores 4xx (errores de cliente).
-- **Filtro:** `nginx-4xx`
+### [nginx-4xx]
+- **Descripción:** Protege contra múltiples respuestas 4xx (errores de cliente) en Nginx.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 10
-- **maxmatches:** 10
-- **findtime:** 600s
-- **bantime:** 3600s
+- **findtime:** 600 segundos (10 minutos)
+- **bantime:** 3600 segundos (1 hora)
 
-### 2. nginx-badbots
-- **Propósito:** Bloquea IPs que usan herramientas de escaneo o bots maliciosos (sqlmap, nikto, nmap, masscan, nessus).
-- **Filtro:** `nginx-badbots`
+### [nginx-badbots]
+- **Descripción:** Bloquea bots maliciosos detectados por el filtro `nginx-badbots`.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 1
-- **maxmatches:** 1
-- **findtime:** 600s
-- **bantime:** 86400s (1 día)
+- **findtime:** 600 segundos (10 minutos)
+- **bantime:** 86400 segundos (1 día)
 
-### 3. nginx-botsearch
-- **Propósito:** Bloquea bots de motores de búsqueda y crawlers agresivos (AhrefsBot, SemrushBot, etc.).
-- **Filtro:** `nginx-botsearch`
+### [nginx-botsearch]
+- **Descripción:** Bloquea intentos de escaneo de bots.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 1
-- **findtime:** 600s
-- **bantime:** 86400s (1 día)
+- **findtime:** 600 segundos (10 minutos)
+- **bantime:** 86400 segundos (1 día)
 
-### 4. nginx-ddos
-- **Propósito:** Detecta posibles ataques DDoS por múltiples peticiones exitosas (200) en poco tiempo.
-- **Filtro:** `nginx-ddos`
+### [nginx-ddos]
+- **Descripción:** Protege contra ataques de denegación de servicio (DDoS) detectando un alto número de peticiones.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 50
-- **findtime:** 60s
-- **bantime:** 86400s (1 día)
+- **findtime:** 60 segundos (1 minuto)
+- **bantime:** 86400 segundos (1 día)
 
-### 5. nginx-limit-req
-- **Propósito:** Bloquea IPs que exceden los límites de peticiones configurados en Nginx (limit_req zone).
-- **Filtro:** `nginx-limit-req`
+### [nginx-limit-req]
+- **Descripción:** Limita la cantidad de peticiones permitidas en un periodo corto, útil para evitar abusos.
 - **Log:** `/var/log/nginx/error.log`
 - **maxretry:** 3
-- **findtime:** 300s
-- **bantime:** 1800s (30 min)
+- **findtime:** 300 segundos (5 minutos)
+- **bantime:** 1800 segundos (30 minutos)
 
-### 6. nginx-login-bruteforce
-- **Propósito:** Bloquea intentos de fuerza bruta en el endpoint de login.
-- **Filtro:** `nginx-login-bruteforce`
+### [nginx-login-bruteforce]
+- **Descripción:** Previene ataques de fuerza bruta en formularios de login.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 5
-- **findtime:** 300s
-- **bantime:** 3600s (1 hora)
+- **findtime:** 300 segundos (5 minutos)
+- **bantime:** 3600 segundos (1 hora)
 
-### 7. nginx-noscript
-- **Propósito:** Bloquea intentos de acceso a rutas no válidas o scripts no existentes.
-- **Filtro:** `nginx-noscript`
+### [nginx-noscript]
+- **Descripción:** Bloquea intentos de acceso a scripts no permitidos.
 - **Log:** `/var/log/nginx/access.log`
 - **maxretry:** 5
-- **findtime:** 600s
-- **bantime:** 3600s (1 hora)
+- **findtime:** 600 segundos (10 minutos)
+- **bantime:** 3600 segundos (1 hora)
+
+### [nginx-modsecurity]
+- **Descripción:** Bloquea eventos detectados por ModSecurity en Nginx.
+- **Log:** `/var/log/nginx/error.log`
+- **maxretry:** 3
+- **findtime:** 600 segundos (10 minutos)
+- **bantime:** 3600 segundos (1 hora)
 
 ---
 
-## Filtros personalizados
-
-Cada jail utiliza un filtro ubicado en `security/fail2ban/filter.d/` que define el patrón de log a buscar:
-
-- **nginx-4xx.conf:** Errores 4xx
-- **nginx-badbots.conf:** Bots y herramientas de escaneo
-- **nginx-botsearch.conf:** Bots de motores de búsqueda
-- **nginx-ddos.conf:** Peticiones 200 masivas
-- **nginx-limit-req.conf:** Exceso de peticiones según limit_req
-- **nginx-login-bruteforce.conf:** Fuerza bruta en login
-- **nginx-noscript.conf:** Acceso a rutas no válidas
-
----
-
-## Notas
-- Todos los logs analizados corresponden a `/var/log/nginx/access.log` o `/var/log/nginx/error.log`.
-- Los valores de `maxretry`, `findtime` y `bantime` pueden ajustarse según la sensibilidad deseada.
-- Estas reglas ayudan a mitigar ataques automatizados, fuerza bruta, bots y abusos de recursos.
-
----
-
-**Última actualización:** 26 de noviembre de 2025
+**Notas:**
+- Cada sección define una "jail" de Fail2Ban específica para distintos patrones de ataque o abuso.
+- Los filtros (`filter = ...`) deben estar definidos en los archivos de filtros de Fail2Ban.
+- Los parámetros `maxretry`, `findtime` y `bantime` determinan la sensibilidad y duración del baneo.
+- Asegúrate de que los logs de Nginx estén correctamente configurados y accesibles para Fail2Ban.

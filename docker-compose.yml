@@ -354,6 +354,134 @@ services:
           memory: 512m
           cpus: '0.5'
 
+  backend:
+    #image: nicoburgos/gestion-canchas-backend:latest
+    build:
+      context: backend/
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: always
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    environment:
+      MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
+      NODE_ENV: production
+    depends_on:
+      mongo-setup:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '1.5'
+        reservations:
+          memory: 1g
+          cpus: '0.5'
+    networks:
+      - mongo-cluster
+      - internal-network
+
+  # ========================================
+  # CLIENTE VISUAL (MONGO EXPRESS)
+  # ========================================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo_express_client_hia
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://devuser:devpass@mongo-primary:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: password123
+    depends_on:
+      mongo-setup:
+        condition: service_completed_successfully
+    networks:
+      - mongo-cluster
+
+  # ========================================
+  # MANTISBT - SISTEMA DE SEGUIMIENTO DE INCIDENCIAS 
+  # ==============================
+  mantis_db:
+    image: postgres:17.6
+    container_name: mantis_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${MANTIS_DB_NAME}
+      POSTGRES_USER: ${MANTIS_DB_USER}
+      POSTGRES_PASSWORD: ${MANTIS_DB_PASS}
+    volumes:
+      - ./data/postgres_data2:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster
+
+  mantisbt:
+    image: xlrl/mantisbt:2.27.3
+    container_name: mantisbt
+    env_file: .env
+    environment:
+      MANTIS_TIMEZONE: America/Argentina/Jujuy
+      MANTIS_ENABLE_ADMIN: 1
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_MODE: ${SMTP_MODE}
+      APP_URL: ${APP_URL}
+    depends_on:
+      - mantis_db
+    volumes:
+      - ./mantisbt/config/config_inc.php:/var/www/html/config/config_inc.php:ro
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster    
+
+  nextcloud_db:
+    image: postgres:16-alpine
+    container_name: nextcloud_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud_user
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nextcloud_network
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nextcloud Server
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    env_file: .env
+    ports:
+      - "8084:80"
+    depends_on:
+      nextcloud_db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: nextcloud_db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud_user
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASS}
+      NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASS}
+    volumes:
+      - nextcloud_data:/var/www/html
+    networks:
+      - nextcloud_network
+      - mongo-cluster
   # ========================================
   # SERVICIO DE BACKUPS DE MONGODB
   # ========================================
@@ -443,98 +571,15 @@ services:
             memory: 512m
             cpus: '0.25'
 
-  backend:
-    #image: nicoburgos/gestion-canchas-backend:latest
-    build:
-      context: backend/
-      dockerfile: Dockerfile
-    container_name: backend
-    restart: always
-    volumes:
-      - ./logs/nginx:/var/log/nginx
-    environment:
-      MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
-      NODE_ENV: production
-    depends_on:
-      mongo-setup:
-        condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          memory: 2g
-          cpus: '1.5'
-        reservations:
-          memory: 1g
-          cpus: '0.5'
-    networks:
-      - mongo-cluster
-      - internal-network
-
-  # ========================================
-  # CLIENTE VISUAL (MONGO EXPRESS)
-  # ========================================
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo_express_client_hia
-    restart: always
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://devuser:devpass@mongo-primary:27017/?authSource=admin
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: password123
-    depends_on:
-      mongo-setup:
-        condition: service_completed_successfully
-    networks:
-      - mongo-cluster
-
-  # ========================================
-  # MANTISBT - SISTEMA DE SEGUIMIENTO DE INCIDENCIAS 
-  # ==============================
-  mantis_db:
-    image: postgres:17.6
-    container_name: mantis_db
-    env_file: .env
-    environment:
-      POSTGRES_DB: ${MANTIS_DB_NAME}
-      POSTGRES_USER: ${MANTIS_DB_USER}
-      POSTGRES_PASSWORD: ${MANTIS_DB_PASS}
-    volumes:
-      - ./data/postgres_data2:/var/lib/postgresql/data
-    restart: always
-    networks:
-      - mantis_network
-      - mongo-cluster
-
-  mantisbt:
-    image: xlrl/mantisbt:2.27.3
-    container_name: mantisbt
-    env_file: .env
-    environment:
-      MANTIS_TIMEZONE: America/Argentina/Jujuy
-      MANTIS_ENABLE_ADMIN: 1
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
-      SMTP_FROM: ${SMTP_FROM}
-      SMTP_MODE: ${SMTP_MODE}
-      APP_URL: ${APP_URL}
-    depends_on:
-      - mantis_db
-    volumes:
-      - ./mantisbt/config/config_inc.php:/var/www/html/config/config_inc.php:ro
-    restart: always
-    networks:
-      - mantis_network
-      - mongo-cluster    
-
 # ========================================
 # VOLÚMENES PARA PERSISTENCIA
 # ========================================
 volumes:
   pmm-server-data:
+    driver: local
+  postgres_data:
+    driver: local
+  nextcloud_data:
     driver: local
   mongo_primary_data:
     driver: local
@@ -559,3 +604,9 @@ networks:
     driver: bridge
   mantis_network:
     driver: bridge
+  nextcloud_network:
+    driver: bridge
+  internal-network:
+    driver: bridge
+  
+  
