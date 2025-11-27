@@ -353,7 +353,10 @@ services:
         reservations:
           memory: 512m
           cpus: '0.5'
-  
+
+  # ========================================
+  # SERVICIO DE BACKUPS DE MONGODB
+  # ========================================
   mongo_backup:
       image: mongo:latest
       container_name: mongo_backup_hia
@@ -366,53 +369,68 @@ services:
       environment:
         - TZ=America/Argentina/Jujuy
       entrypoint: >
-        bash -c "
-          echo '🚀 Inicializando servicio de backups...';
+        bash -c '
+          set -e
+          echo "Inicializando servicio de backups..."
           
-          # Actualizar e instalar dependencias
-          apt-get update -qq &&
-          apt-get install -y cron tzdata -qq &&
+          # Actualizar repositorios
+          echo "Actualizando paquetes..."
+          apt-get update -qq
+          
+          # Instalar dependencias
+          echo "Instalando cron, tzdata y dos2unix..."
+          apt-get install -y cron tzdata dos2unix -qq
+          
+          # Convertir archivos a formato Unix
+          echo "Convirtiendo archivos a formato Unix..."
+          dos2unix /backup/*.sh 2>/dev/null || true
+          dos2unix /backup/*.txt 2>/dev/null || true
+          echo "Archivos convertidos"
           
           # Configurar zona horaria
-          ln -snf /usr/share/zoneinfo/$$TZ /etc/localtime &&
-          echo $$TZ > /etc/timezone &&
+          echo "Configurando zona horaria..."
+          ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+          echo $TZ > /etc/timezone
           
-          # Dar permisos de ejecución a los scripts
-          chmod +x /backup/*.sh &&
+          # Dar permisos de ejecución
+          echo "Configurando permisos..."
+          chmod +x /backup/*.sh
           
-          # Crear directorio de dumps si no existe
-          mkdir -p /backup/dumps &&
+          # Crear directorio de dumps
+          mkdir -p /backup/dumps
           
           # Configurar crontab
           if [ -f /backup/crontab.txt ]; then
-            cp /backup/crontab.txt /etc/cron.d/mongo-backup &&
-            chmod 0644 /etc/cron.d/mongo-backup &&
-            crontab /etc/cron.d/mongo-backup &&
-            echo '✅ Crontab configurado correctamente';
+            echo "Configurando crontab..."
+            cp /backup/crontab.txt /etc/cron.d/mongo-backup
+            chmod 0644 /etc/cron.d/mongo-backup
+            crontab /etc/cron.d/mongo-backup
+            echo "Crontab configurado:"
+            crontab -l
           else
-            echo '⚠️  Archivo crontab.txt no encontrado';
+            echo "Archivo crontab.txt no encontrado"
           fi
           
-          # Crear archivo de log si no existe
-          touch /backup/backup.log &&
+          # Crear archivo de log
+          touch /backup/backup.log
           
-          # Iniciar el servicio cron
-          service cron start &&
-          echo '✅ Servicio cron iniciado';
+          # Iniciar cron
+          echo "Iniciando servicio cron..."
+          service cron start
           
-          # Ejecutar pruebas del sistema (opcional)
+          # Ejecutar prueba (opcional)
           if [ -f /backup/test_backup.sh ]; then
-            echo '🧪 Ejecutando pruebas del sistema...';
-            bash /backup/test_backup.sh;
+            echo "Ejecutando pruebas del sistema..."
+            bash /backup/test_backup.sh
           fi
           
-          echo '✅ Sistema de backups operativo';
-          echo '📋 Monitoreando logs...';
-          echo '═══════════════════════════════════════';
+          echo "Sistema de backups operativo"
+          echo "Monitoreando logs..."
+          echo "════════════════════════════════════"
           
-          # Mantener el contenedor activo y mostrar logs
+          # Mantener contenedor activo y mostrar logs
           tail -f /backup/backup.log
-        "
+        '
       networks:
         - mongo-cluster
       deploy:
