@@ -250,6 +250,7 @@ services:
     ports:
       - "443:8443"
     environment:
+      - TZ=America/Argentina/Buenos_Aires
       - PARANOIA=1
       - BLOCKING_PARANOIA=1
       - ANOMALY_INBOUND=20
@@ -487,6 +488,47 @@ services:
     networks:
       - mongo-cluster
 
+  # ========================================
+  # MANTISBT - SISTEMA DE SEGUIMIENTO DE INCIDENCIAS 
+  # ==============================
+  mantis_db:
+    image: postgres:17.6
+    container_name: mantis_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${MANTIS_DB_NAME}
+      POSTGRES_USER: ${MANTIS_DB_USER}
+      POSTGRES_PASSWORD: ${MANTIS_DB_PASS}
+    volumes:
+      - ./data/postgres_data2:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster
+
+  mantisbt:
+    image: xlrl/mantisbt:2.27.3
+    container_name: mantisbt
+    env_file: .env
+    environment:
+      MANTIS_TIMEZONE: America/Argentina/Jujuy
+      MANTIS_ENABLE_ADMIN: 1
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_MODE: ${SMTP_MODE}
+      APP_URL: ${APP_URL}
+    depends_on:
+      - mantis_db
+    volumes:
+      - ./mantisbt/config/config_inc.php:/var/www/html/config/config_inc.php:ro
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster    
+
 # ========================================
 # VOLÚMENES PARA PERSISTENCIA
 # ========================================
@@ -513,4 +555,6 @@ volumes:
 # ========================================
 networks:
   mongo-cluster:
+    driver: bridge
+  mantis_network:
     driver: bridge
