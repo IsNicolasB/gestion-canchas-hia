@@ -1,0 +1,138 @@
+/* Tabla */
+.table {
+  --bs-table-bg: transparent;
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+  border-bottom-width: 2px;
+  border-bottom-color: #198754;
+}
+
+.table tbody td {
+  padding: 1rem;
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: all 0.2s;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(25, 135, 84, 0.1) !important;
+  transform: scale(1.01);
+  transition: all 0.2s ease;
+}
+
+/* Badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+}
+
+/* Botones */
+.btn-group-sm .btn {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.btn-outline-primary, .btn-outline-warning, .btn-outline-danger {
+  border-width: 1.5px;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+.btn-outline-warning:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.2);
+}
+
+.btn-outline-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+}
+
+/* Paginación */
+.pagination {
+  --bs-pagination-padding-x: 0.8rem;
+  --bs-pagination-padding-y: 0.5rem;
+  --bs-pagination-font-size: 0.9rem;
+}
+
+.page-link {
+  transition: all 0.3s ease;
+  min-width: 40px;
+  text-align: center;
+  border-radius: 50% !important;
+  margin: 0 3px;
+  font-weight: 500;
+  color: #198754;
+}
+
+.page-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.page-link.active-green {
+  background-color: #198754 !important;
+  border-color: #198754 !important;
+  color: white !important;
+}
+
+.page-link.active-green:hover {
+  background-color: #157347 !important;
+  border-color: #146c43 !important;
+}
+
+.page-link:focus {
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+  outline: none;
+}
+
+.page-item.disabled .page-link {
+  opacity: 0.6;
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.9rem;
+  }
+
+  .btn-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+}
+
+/* Mejora para tabla bonita */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(25, 135, 84, 0.05);
+}
+
+.table-dark th {
+  background-color: #198754 !important;
+  color: white !important;
+  border: none;
+}
