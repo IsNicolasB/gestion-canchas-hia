@@ -56,15 +56,30 @@ const obtenerClientes = async (req, res, next) => {
     }
   */
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
     // Optimización: .lean() para queries de solo lectura + proyección de campos necesarios
     const clientes = await Cliente.find()
       .select('nombre apellido correo telefono tipo')
+      .skip(skip)
+      .limit(limit)
       .lean();
+
+    const total = await Cliente.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+    
     res.status(200).json({
       success: true,
       message: 'Clientes recuperados exitosamente',
       count: clientes.length,
-      data: clientes
+      data: clientes,
+      pagination: {
+        page,
+        limit,
+        total,  // Importante: total, no totalItems
+        totalPages
+      }
     });
   } catch (error) {
     next(error);

@@ -49,22 +49,33 @@ const obtenerReservas = async (req, res, next) => {
     }
   */
   try {
-    // Optimización: limitar populate a campos necesarios y usar .lean()
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const reservas = await Reserva.find()
-      .populate('horariosReservados', 'horaInicio horaFin estado')
-      .populate('cancha', 'nombre tipo')
-      .populate('cliente', 'nombre apellido telefono')
-      .populate('pago', 'importeTotal estado')
-      .select('fecha horaInicio horaFin cancha cliente pago horariosReservados')
+      .populate('cliente')  // Poblar datos del cliente
+      .populate('cancha')   // Poblar datos de la cancha
+      .sort({ fecha: -1 })  // Ordenar por fecha descendente
+      .skip(skip)
+      .limit(limit)
       .lean();
-    res.status(200).json({
+
+    const total = await Reserva.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
       success: true,
-      message: 'Reservas recuperadas exitosamente',
-      count: reservas.length,
-      data: reservas
+      data: reservas,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

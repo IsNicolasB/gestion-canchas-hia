@@ -15,8 +15,8 @@ export class ReservasService {
 
   constructor(private http: HttpClient) { }
 
-  getReservas() {
-    return this.http.get(this.apiUrl);
+  getReservas(page: number = 1, limit: number = 10) {
+    return this.http.get(`${this.apiUrl}?page=${page}&limit=${limit}`);
   }
 
   getReservaById(id: string) {
