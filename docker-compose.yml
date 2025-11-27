@@ -117,7 +117,7 @@ services:
         condition: service_healthy
     entrypoint: >
       bash -c "
-        echo '⏳ Esperando 10 segundos iniciales...';
+        echo '⏳ Esperando estabilización...';
         sleep 10;
         
         echo '🔧 Paso 1: Iniciando Replica Set...';
@@ -135,29 +135,111 @@ services:
             print(\"✅ Replica Set iniciado\");
           } catch(e) {
             if (e.codeName === \"AlreadyInitialized\") {
-              print(\"⚠️ Ya inicializado\");
+              print(\"⚠️ Replica Set ya inicializado\");
             }
           }
-        ' || true;
+        ';
         
-        echo '⏳ Esperando 40 segundos para elección de primario...';
-        sleep 40;
+        sleep 15;
         
-        echo '🔧 Paso 2: Creando usuario (esperando primario)...';
-        for i in {1..10}; do
-          mongosh --host mongo-primary:27017 --eval '
-            db = db.getSiblingDB(\"admin\");
-            db.createUser({
+        echo '🔧 Paso 2: Creando usuario admin...';
+        mongosh --host mongo-primary:27017 --eval '
+          try {
+            db.getSiblingDB(\"admin\").createUser({
               user: \"devuser\",
               pwd: \"devpass\",
-              roles: [{role: \"root\", db: \"admin\"}]
+              roles: [{ role: \"root\", db: \"admin\" }]
             });
-          ' && break || echo \"Intento \$i/10 falló, reintentando en 3s...\";
-          sleep 3;
-        done
+            print(\"✅ Usuario admin creado\");
+          } catch(e) {
+            print(\"⚠️ Usuario admin ya existe\");
+          }
+        ';
         
-        echo '✅ Setup completado';
+        echo '🔧 Paso 3: Creando usuario PMM (SE PERSISTE)...';
+        mongosh --host mongo-primary:27017 -u devuser -p devpass --authenticationDatabase admin --eval '
+          try {
+            db.getSiblingDB(\"admin\").createUser({
+              user: \"pmm\",
+              pwd: \"pmmpass\",
+              roles: [
+                { role: \"clusterMonitor\", db: \"admin\" },
+                { role: \"read\", db: \"local\" },
+                { role: \"read\", db: \"admin\" },
+                { role: \"read\", db: \"config\" },
+                { role: \"readAnyDatabase\", db: \"admin\" }
+              ]
+            });
+            print(\"✅ Usuario PMM creado y persistido en volumen\");
+          } catch(e) {
+            print(\"⚠️ Usuario PMM ya existe (esto es BUENO)\");
+          }
+        ';
+        
+        echo '🔧 Paso 4: Habilitando profiling...';
+        mongosh --host mongo-primary:27017 -u devuser -p devpass --authenticationDatabase admin --eval '
+          db.getSiblingDB(\"mi_app_db\").setProfilingLevel(2, { slowms: 100 });
+          print(\"✅ Profiling habilitado\");
+        ';
+        
+        echo '✅ Configuración completada y persistida';
       "
+  
+  pmm-server:
+    image: percona/pmm-server:2
+    container_name: pmm_server_hia
+    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - pmm-server-data:/srv
+    environment:
+      - DISABLE_UPDATES=true
+    networks:
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+  
+  # ========================================
+  # PMM SETUP MANUAL - EJECUTAR DESPUÉS DE CAMBIAR CONTRASEÑA
+  # ========================================
+  pmm-setup-manual:
+    image: docker:latest
+    container_name: pmm_setup_manual_hia
+    restart: "no"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mongo-cluster
+    depends_on:
+      pmm-server:
+        condition: service_healthy
+      mongo-setup:
+        condition: service_completed_successfully
+    entrypoint: >
+      sh -c "
+        echo '🔧 Configurando pmm-admin...';
+        docker exec pmm_server_hia pmm-admin config --server-url=https://admin:admin1234@pmm-server --server-insecure-tls;
+        
+        echo '🔧 Registrando MongoDB Primary...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-primary --port=27017 --query-source=profiler --service-name=mongodb-primary-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Registrando MongoDB Secondary 1...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-secondary1 --port=27017 --query-source=profiler --service-name=mongodb-secondary1-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Registrando MongoDB Secondary 2...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-secondary2 --port=27017 --query-source=profiler --service-name=mongodb-secondary2-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Verificando servicios...';
+        docker exec pmm_server_hia pmm-admin list;
+        
+        echo '✅ Configuración completada';
+      "
+    profiles: ["manual"]  # Solo ejecuta cuando se especifique
 
   # ============================================
   # MODSECURITY WAF - Firewall capa 7
@@ -166,21 +248,23 @@ services:
     image: owasp/modsecurity-crs:nginx-alpine
     container_name: modsecurity-waf
     ports:
-      - "8080:80"  # EXPONER WAF en 8080
+      - "443:8443"
     environment:
-      - PARANOIA=2
-      - BLOCKING_PARANOIA=2
-      - ANOMALY_INBOUND=10
+      - PARANOIA=1
+      - BLOCKING_PARANOIA=1
+      - ANOMALY_INBOUND=20
       - ANOMALY_OUTBOUND=5
       - PROXY_SSL_VERIFY=off
     volumes:
-      - ./security/waf/waf-proxy.conf:/etc/nginx/conf.d/default.conf.template
+      - ./security/waf/default.conf.template:/etc/nginx/templates/conf.d/default.conf.template
       - ./security/waf/custom-rules.conf:/etc/modsecurity.d/custom-rules.conf:ro
       - ./logs/nginx:/var/log/nginx
+      - ./security/waf/certs:/etc/nginx/certs:ro
     networks:
       - mongo-cluster
     depends_on:
       - frontend
+      - backend
     restart: unless-stopped
     deploy:
       resources:
@@ -189,7 +273,30 @@ services:
           cpus: '1.0'
         reservations:
           memory: 512m
-          cpus: '0.5'   
+          cpus: '0.5'
+
+
+  frontend:
+    build:
+      context: frontend/
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    # Sin ports expuestos externamente (solo accesible desde WAF)
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+        reservations:
+          memory: 512m
+          cpus: '0.25'
+    networks:
+      - mongo-cluster
 
   # ============================================
   # FAIL2BAN - Bloqueo automático de IPs
@@ -247,6 +354,76 @@ services:
           memory: 512m
           cpus: '0.5'
   
+  mongo_backup:
+      image: mongo:latest
+      container_name: mongo_backup_hia
+      restart: always
+      depends_on:
+        mongo-setup:
+          condition: service_completed_successfully
+      volumes:
+        - ./backup:/backup
+      environment:
+        - TZ=America/Argentina/Jujuy
+      entrypoint: >
+        bash -c "
+          echo '🚀 Inicializando servicio de backups...';
+          
+          # Actualizar e instalar dependencias
+          apt-get update -qq &&
+          apt-get install -y cron tzdata -qq &&
+          
+          # Configurar zona horaria
+          ln -snf /usr/share/zoneinfo/$$TZ /etc/localtime &&
+          echo $$TZ > /etc/timezone &&
+          
+          # Dar permisos de ejecución a los scripts
+          chmod +x /backup/*.sh &&
+          
+          # Crear directorio de dumps si no existe
+          mkdir -p /backup/dumps &&
+          
+          # Configurar crontab
+          if [ -f /backup/crontab.txt ]; then
+            cp /backup/crontab.txt /etc/cron.d/mongo-backup &&
+            chmod 0644 /etc/cron.d/mongo-backup &&
+            crontab /etc/cron.d/mongo-backup &&
+            echo '✅ Crontab configurado correctamente';
+          else
+            echo '⚠️  Archivo crontab.txt no encontrado';
+          fi
+          
+          # Crear archivo de log si no existe
+          touch /backup/backup.log &&
+          
+          # Iniciar el servicio cron
+          service cron start &&
+          echo '✅ Servicio cron iniciado';
+          
+          # Ejecutar pruebas del sistema (opcional)
+          if [ -f /backup/test_backup.sh ]; then
+            echo '🧪 Ejecutando pruebas del sistema...';
+            bash /backup/test_backup.sh;
+          fi
+          
+          echo '✅ Sistema de backups operativo';
+          echo '📋 Monitoreando logs...';
+          echo '═══════════════════════════════════════';
+          
+          # Mantener el contenedor activo y mostrar logs
+          tail -f /backup/backup.log
+        "
+      networks:
+        - mongo-cluster
+      deploy:
+        resources:
+          limits:
+            memory: 1g
+            cpus: '0.5'
+          reservations:
+            memory: 512m
+            cpus: '0.25'
+
   backend:
     #image: nicoburgos/gestion-canchas-backend:latest
     build:
@@ -274,31 +451,6 @@ services:
       - mongo-cluster
 
   # ========================================
-  # SERVICIO DE FRONTEND (NGINX)
-  # ========================================
-  frontend:
-    #image: nicoburgos/gestion-canchas-frontend:latest
-    build:
-      context: frontend/
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: always
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-          cpus: '0.5'
-        reservations:
-          memory: 512m
-          cpus: '0.25'
-    networks:
-      - mongo-cluster
-
-  # ========================================
   # CLIENTE VISUAL (MONGO EXPRESS)
   # ========================================
   mongo-express:
@@ -321,6 +473,8 @@ services:
 # VOLÚMENES PARA PERSISTENCIA
 # ========================================
 volumes:
+  pmm-server-data:
+    driver: local
   mongo_primary_data:
     driver: local
   mongo_primary_config:
