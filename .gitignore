@@ -60,8 +60,6 @@ coverage/
 # Other
 .nyc_output/
 .cache/
-*.tgz
-*.tar.gz
 
 #certificates
 

@@ -241,7 +241,31 @@ services:
       "
     profiles: ["manual"]  # Solo ejecuta cuando se especifique
 
-  # ============================================
+  frontend:
+    image: nicoburgos/gestion-canchas-frontend:latest
+    #build:
+    #  context: frontend/
+    #  dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    # Sin ports expuestos externamente (solo accesible desde WAF)
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+        reservations:
+          memory: 512m
+          cpus: '0.25'
+    networks:
+      - mongo-cluster
+      - internal-network
+
+   # ============================================
   # MODSECURITY WAF - Firewall capa 7
   # ============================================
   waf:
@@ -275,29 +299,6 @@ services:
         reservations:
           memory: 512m
           cpus: '0.5'
-
-  frontend:
-    build:
-      context: frontend/
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: always
-    # Sin ports expuestos externamente (solo accesible desde WAF)
-    volumes:
-      - ./logs/nginx:/var/log/nginx
-    depends_on:
-      - backend
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-          cpus: '0.5'
-        reservations:
-          memory: 512m
-          cpus: '0.25'
-    networks:
-      - mongo-cluster
-      - internal-network
 
   # ============================================
   # FAIL2BAN - Bloqueo automático de IPs
@@ -355,10 +356,7 @@ services:
           cpus: '0.5'
 
   backend:
-    #image: nicoburgos/gestion-canchas-backend:latest
-    build:
-      context: backend/
-      dockerfile: Dockerfile
+    image: nicoburgos/gestion-canchas-backend:latest
     container_name: backend
     restart: always
     volumes:
