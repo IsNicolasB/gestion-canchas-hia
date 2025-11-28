@@ -11,8 +11,8 @@ import time
 import subprocess
 import base64
 
-TARGET = "https://localhost:443"
-VERIFY_SSL = False  # Cambiar a True en producción si el certificado es válido
+TARGET = "https://jayme-subvesicular-paulene.ngrok-free.dev/"
+VERIFY_SSL = True  # Cambiar a True en producción si el certificado es válido
 HEADERS = {"User-Agent": "security-test-agent/1.0"}
 TIMEOUT = 5
 

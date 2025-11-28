@@ -269,7 +269,9 @@ services:
   # MODSECURITY WAF - Firewall capa 7
   # ============================================
   waf:
-    image: owasp/modsecurity-crs:nginx-alpine
+    build:
+      context: ./security/waf
+      dockerfile: Dockerfile
     container_name: modsecurity-waf
     ports:
       - "443:8443"
@@ -281,10 +283,8 @@ services:
       - ANOMALY_OUTBOUND=5
       - PROXY_SSL_VERIFY=off
     volumes:
-      - ./security/waf/default.conf.template:/etc/nginx/templates/conf.d/default.conf.template
-      - ./security/waf/custom-rules.conf:/etc/modsecurity.d/custom-rules.conf:ro
       - ./logs/nginx:/var/log/nginx
-      - ./security/waf/certs:/etc/nginx/certs:ro
+      - ./security/waf/denied-ips.conf:/etc/nginx/custom/denied-ips.conf:ro
     networks:
       - mongo-cluster
     depends_on:
@@ -311,12 +311,15 @@ services:
       - NET_RAW
     environment:
       - TZ=America/Argentina/Buenos_Aires
-      - F2B_LOG_LEVEL=INFO
+      - F2B_LOG_LEVEL=DEBUG
     volumes:
       - ./security/fail2ban/data:/data
       - ./security/fail2ban/jail.d:/data/jail.d:ro
       - ./security/fail2ban/filter.d:/data/filter.d:ro
       - ./logs/nginx:/var/log/nginx:ro
+      - ./security/waf/denied-ips.conf:/etc/nginx/custom/denied-ips.conf
+      - ./security/fail2ban/action.d/f2b-nginx-ban.sh:/usr/local/bin/f2b-nginx-ban.sh:ro
+      - ./security/fail2ban/action.d/nginx-deny-xff.conf:/etc/fail2ban/action.d/nginx-deny-xff.conf:ro
     network_mode: "host"
     depends_on:
       - frontend
