@@ -7,14 +7,17 @@ const reservaSchema = new mongoose.Schema({
   }],
   cancha: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Cancha' 
+    ref: 'Cancha',
+    index: true
   },
   cliente: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Cliente' 
+    ref: 'Cliente',
+    index: true
   },
   fecha: { 
-    type: String 
+    type: String,  // NOTA: Debería ser Date, pero mantenemos String por compatibilidad
+    index: true
   },
   horaInicio: { 
     type: String 
@@ -27,6 +30,10 @@ const reservaSchema = new mongoose.Schema({
     ref: 'Pago'
   }
 });
+
+// Índices compuestos para queries optimizadas
+reservaSchema.index({ cliente: 1, fecha: -1 });
+reservaSchema.index({ cancha: 1, fecha: 1 });
 
 const Reserva = mongoose.model('Reserva', reservaSchema);
 

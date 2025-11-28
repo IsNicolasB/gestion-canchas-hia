@@ -11,8 +11,8 @@ export class ClientesService {
 
   constructor(private http: HttpClient) { }
 
-  getClientes() {
-    return this.http.get(this.apiUrl);
+  getClientes(page: number = 1, limit: number = 10) {
+    return this.http.get(`${this.apiUrl}?page=${page}&limit=${limit}`);
   }
 
   getClienteById(id: string) {

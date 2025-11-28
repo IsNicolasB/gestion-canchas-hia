@@ -8,8 +8,6 @@ services:
     container_name: mongodb_primary_hia
     restart: always
     hostname: mongo-primary
-    ports:
-      - "27017:27017"
     volumes:
       - mongo_primary_data:/data/db
       - mongo_primary_config:/data/configdb
@@ -26,6 +24,7 @@ services:
           cpus: '1.0'
     networks:
       - mongo-cluster
+      - internal-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -41,8 +40,6 @@ services:
     container_name: mongodb_secondary1_hia
     restart: always
     hostname: mongo-secondary1
-    ports:
-      - "27018:27017"
     volumes:
       - mongo_secondary1_data:/data/db
       - mongo_secondary1_config:/data/configdb
@@ -57,6 +54,7 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       - mongo-primary
     healthcheck:
@@ -74,8 +72,6 @@ services:
     container_name: mongodb_secondary2_hia
     restart: always
     hostname: mongo-secondary2
-    ports:
-      - "27019:27017"
     volumes:
       - mongo_secondary2_data:/data/db
       - mongo_secondary2_config:/data/configdb
@@ -90,6 +86,7 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       - mongo-primary
     healthcheck:
@@ -108,6 +105,7 @@ services:
     restart: "no"
     networks:
       - mongo-cluster
+      - internal-network
     depends_on:
       mongo-primary:
         condition: service_healthy
@@ -117,7 +115,7 @@ services:
         condition: service_healthy
     entrypoint: >
       bash -c "
-        echo '⏳ Esperando 10 segundos iniciales...';
+        echo '⏳ Esperando estabilización...';
         sleep 10;
         
         echo '🔧 Paso 1: Iniciando Replica Set...';
@@ -135,42 +133,237 @@ services:
             print(\"✅ Replica Set iniciado\");
           } catch(e) {
             if (e.codeName === \"AlreadyInitialized\") {
-              print(\"⚠️ Ya inicializado\");
+              print(\"⚠️ Replica Set ya inicializado\");
             }
           }
-        ' || true;
+        ';
         
-        echo '⏳ Esperando 40 segundos para elección de primario...';
-        sleep 40;
+        sleep 15;
         
-        echo '🔧 Paso 2: Creando usuario (esperando primario)...';
-        for i in {1..10}; do
-          mongosh --host mongo-primary:27017 --eval '
-            db = db.getSiblingDB(\"admin\");
-            db.createUser({
+        echo '🔧 Paso 2: Creando usuario admin...';
+        mongosh --host mongo-primary:27017 --eval '
+          try {
+            db.getSiblingDB(\"admin\").createUser({
               user: \"devuser\",
               pwd: \"devpass\",
-              roles: [{role: \"root\", db: \"admin\"}]
+              roles: [{ role: \"root\", db: \"admin\" }]
             });
-          ' && break || echo \"Intento \$i/10 falló, reintentando en 3s...\";
-          sleep 3;
-        done
+            print(\"✅ Usuario admin creado\");
+          } catch(e) {
+            print(\"⚠️ Usuario admin ya existe\");
+          }
+        ';
         
-        echo '✅ Setup completado';
+        echo '🔧 Paso 3: Creando usuario PMM (SE PERSISTE)...';
+        mongosh --host mongo-primary:27017 -u devuser -p devpass --authenticationDatabase admin --eval '
+          try {
+            db.getSiblingDB(\"admin\").createUser({
+              user: \"pmm\",
+              pwd: \"pmmpass\",
+              roles: [
+                { role: \"clusterMonitor\", db: \"admin\" },
+                { role: \"read\", db: \"local\" },
+                { role: \"read\", db: \"admin\" },
+                { role: \"read\", db: \"config\" },
+                { role: \"readAnyDatabase\", db: \"admin\" }
+              ]
+            });
+            print(\"✅ Usuario PMM creado y persistido en volumen\");
+          } catch(e) {
+            print(\"⚠️ Usuario PMM ya existe (esto es BUENO)\");
+          }
+        ';
+        
+        echo '🔧 Paso 4: Habilitando profiling...';
+        mongosh --host mongo-primary:27017 -u devuser -p devpass --authenticationDatabase admin --eval '
+          db.getSiblingDB(\"mi_app_db\").setProfilingLevel(2, { slowms: 100 });
+          print(\"✅ Profiling habilitado\");
+        ';
+        
+        echo '✅ Configuración completada y persistida';
       "
+  
+  pmm-server:
+    image: percona/pmm-server:2
+    container_name: pmm_server_hia
+    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - pmm-server-data:/srv
+    environment:
+      - DISABLE_UPDATES=true
+    networks:
+      - mongo-cluster
+      - internal-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+  
+  # ========================================
+  # PMM SETUP MANUAL - EJECUTAR DESPUÉS DE CAMBIAR CONTRASEÑA
+  # ========================================
+  pmm-setup-manual:
+    image: docker:latest
+    container_name: pmm_setup_manual_hia
+    restart: "no"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mongo-cluster
+      - internal-network
+    depends_on:
+      pmm-server:
+        condition: service_healthy
+      mongo-setup:
+        condition: service_completed_successfully
+    entrypoint: >
+      sh -c "
+        echo '🔧 Configurando pmm-admin...';
+        docker exec pmm_server_hia pmm-admin config --server-url=https://admin:admin1234@pmm-server --server-insecure-tls;
+        
+        echo '🔧 Registrando MongoDB Primary...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-primary --port=27017 --query-source=profiler --service-name=mongodb-primary-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Registrando MongoDB Secondary 1...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-secondary1 --port=27017 --query-source=profiler --service-name=mongodb-secondary1-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Registrando MongoDB Secondary 2...';
+        docker exec pmm_server_hia pmm-admin add mongodb --username=pmm --password=pmmpass --host=mongo-secondary2 --port=27017 --query-source=profiler --service-name=mongodb-secondary2-hia --replication-set=rs0 --disable-collectors='' --skip-connection-check;
+        
+        echo '🔧 Verificando servicios...';
+        docker exec pmm_server_hia pmm-admin list;
+        
+        echo '✅ Configuración completada';
+      "
+    profiles: ["manual"]  # Solo ejecuta cuando se especifique
+
+  frontend:
+    image: nicoburgos/gestion-canchas-frontend:latest
+    #build:
+    #  context: frontend/
+    #  dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    # Sin ports expuestos externamente (solo accesible desde WAF)
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '0.5'
+        reservations:
+          memory: 512m
+          cpus: '0.25'
+    networks:
+      - mongo-cluster
+      - internal-network
+
+   # ============================================
+  # MODSECURITY WAF - Firewall capa 7
+  # ============================================
+  waf:
+    build:
+      context: ./security/waf
+      dockerfile: Dockerfile
+    container_name: modsecurity-waf
+    ports:
+      - "443:8443"
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - PARANOIA=1
+      - BLOCKING_PARANOIA=1
+      - ANOMALY_INBOUND=20
+      - ANOMALY_OUTBOUND=5
+      - PROXY_SSL_VERIFY=off
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+      - ./security/waf/denied-ips.conf:/etc/nginx/custom/denied-ips.conf:ro
+    networks:
+      - mongo-cluster
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+          cpus: '1.0'
+        reservations:
+          memory: 512m
+          cpus: '0.5'
+
+  # ============================================
+  # FAIL2BAN - Bloqueo automático de IPs
+  # ============================================
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: fail2ban
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    environment:
+      - TZ=America/Argentina/Buenos_Aires
+      - F2B_LOG_LEVEL=DEBUG
+    volumes:
+      - ./security/fail2ban/data:/data
+      - ./security/fail2ban/jail.d:/data/jail.d:ro
+      - ./security/fail2ban/filter.d:/data/filter.d:ro
+      - ./logs/nginx:/var/log/nginx:ro
+      - ./security/waf/denied-ips.conf:/etc/nginx/custom/denied-ips.conf
+      - ./security/fail2ban/action.d/f2b-nginx-ban.sh:/usr/local/bin/f2b-nginx-ban.sh:ro
+      - ./security/fail2ban/action.d/nginx-deny-xff.conf:/etc/fail2ban/action.d/nginx-deny-xff.conf:ro
+    network_mode: "host"
+    depends_on:
+      - frontend
+    restart: unless-stopped
 
   # ========================================
   # SERVICIO DE BACKEND (NODEJS/EXPRESS)
   # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis_hia
+    restart: always
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1000
+      --loglevel notice
+    networks:
+      - mongo-cluster
+      - internal-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 768m
+          cpus: '1.0'
+        reservations:
+          memory: 512m
+          cpus: '0.5'
+
   backend:
-    #image: nicoburgos/gestion-canchas-backend:latest
-    build:
-      context: backend/
-      dockerfile: Dockerfile
+    image: nicoburgos/gestion-canchas-backend:latest
     container_name: backend
     restart: always
-    ports:
-      - "3000:3000"
+    volumes:
+      - ./logs/nginx:/var/log/nginx
     environment:
       MONGODB_URI: mongodb://devuser:devpass@mongo-primary:27017,mongo-secondary1:27017,mongo-secondary2:27017/mi_app_db?replicaSet=rs0&authSource=admin&retryWrites=true&w=majority
       NODE_ENV: production
@@ -187,31 +380,8 @@ services:
           cpus: '0.5'
     networks:
       - mongo-cluster
+      - internal-network
 
-  # ========================================
-  # SERVICIO DE FRONTEND (NGINX)
-  # ========================================
-  frontend:
-    #image: nicoburgos/gestion-canchas-frontend:latest
-    build:
-      context: frontend/
-      dockerfile: Dockerfile
-    container_name: frontend
-    restart: always
-    ports:
-      - "8080:80"
-    depends_on:
-      - backend
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-          cpus: '0.5'
-        reservations:
-          memory: 512m
-          cpus: '0.25'
-    networks:
-      - mongo-cluster
   # ========================================
   # CLIENTE VISUAL (MONGO EXPRESS)
   # ========================================
@@ -231,10 +401,187 @@ services:
     networks:
       - mongo-cluster
 
+  # ========================================
+  # MANTISBT - SISTEMA DE SEGUIMIENTO DE INCIDENCIAS 
+  # ==============================
+  mantis_db:
+    image: postgres:17.6
+    container_name: mantis_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${MANTIS_DB_NAME}
+      POSTGRES_USER: ${MANTIS_DB_USER}
+      POSTGRES_PASSWORD: ${MANTIS_DB_PASS}
+    volumes:
+      - ./data/postgres_data2:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster
+
+  mantisbt:
+    image: xlrl/mantisbt:2.27.3
+    container_name: mantisbt
+    env_file: .env
+    environment:
+      MANTIS_TIMEZONE: America/Argentina/Jujuy
+      MANTIS_ENABLE_ADMIN: 1
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_MODE: ${SMTP_MODE}
+      APP_URL: ${APP_URL}
+    depends_on:
+      - mantis_db
+    volumes:
+      - ./mantisbt/config/config_inc.php:/var/www/html/config/config_inc.php:ro
+    restart: always
+    networks:
+      - mantis_network
+      - mongo-cluster    
+
+  nextcloud_db:
+    image: postgres:16-alpine
+    container_name: nextcloud_db
+    env_file: .env
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud_user
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nextcloud_network
+      - mongo-cluster
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Nextcloud Server
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    env_file: .env
+    ports:
+      - "8084:80"
+    depends_on:
+      nextcloud_db:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: nextcloud_db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud_user
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASS}
+      NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASS}
+    volumes:
+      - nextcloud_data:/var/www/html
+    networks:
+      - nextcloud_network
+      - mongo-cluster
+  # ========================================
+  # SERVICIO DE BACKUPS DE MONGODB
+  # ========================================
+  mongo_backup:
+      image: mongo:latest
+      container_name: mongo_backup_hia
+      restart: always
+      depends_on:
+        mongo-setup:
+          condition: service_completed_successfully
+      volumes:
+        - ./backup:/backup
+      environment:
+        - TZ=America/Argentina/Jujuy
+      entrypoint: >
+        bash -c '
+          set -e
+          echo "Inicializando servicio de backups..."
+          
+          # Actualizar repositorios
+          echo "Actualizando paquetes..."
+          apt-get update -qq
+          
+          # Instalar dependencias
+          echo "Instalando cron, tzdata y dos2unix..."
+          apt-get install -y cron tzdata dos2unix -qq
+          
+          # Convertir archivos a formato Unix
+          echo "Convirtiendo archivos a formato Unix..."
+          dos2unix /backup/*.sh 2>/dev/null || true
+          dos2unix /backup/*.txt 2>/dev/null || true
+          echo "Archivos convertidos"
+          
+          # Configurar zona horaria
+          echo "Configurando zona horaria..."
+          ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+          echo $TZ > /etc/timezone
+          
+          # Dar permisos de ejecución
+          echo "Configurando permisos..."
+          chmod +x /backup/*.sh
+          
+          # Crear directorio de dumps
+          mkdir -p /backup/dumps
+          
+          # Configurar crontab
+          if [ -f /backup/crontab.txt ]; then
+            echo "Configurando crontab..."
+            cp /backup/crontab.txt /etc/cron.d/mongo-backup
+            chmod 0644 /etc/cron.d/mongo-backup
+            crontab /etc/cron.d/mongo-backup
+            echo "Crontab configurado:"
+            crontab -l
+          else
+            echo "Archivo crontab.txt no encontrado"
+          fi
+          
+          # Crear archivo de log
+          touch /backup/backup.log
+          
+          # Iniciar cron
+          echo "Iniciando servicio cron..."
+          service cron start
+          
+          # Ejecutar prueba (opcional)
+          if [ -f /backup/test_backup.sh ]; then
+            echo "Ejecutando pruebas del sistema..."
+            bash /backup/test_backup.sh
+          fi
+          
+          echo "Sistema de backups operativo"
+          echo "Monitoreando logs..."
+          echo "════════════════════════════════════"
+          
+          # Mantener contenedor activo y mostrar logs
+          tail -f /backup/backup.log
+        '
+      networks:
+        - mongo-cluster
+        - internal-network
+      deploy:
+        resources:
+          limits:
+            memory: 1g
+            cpus: '0.5'
+          reservations:
+            memory: 512m
+            cpus: '0.25'
+
 # ========================================
 # VOLÚMENES PARA PERSISTENCIA
 # ========================================
 volumes:
+  pmm-server-data:
+    driver: local
+  postgres_data:
+    driver: local
+  nextcloud_data:
+    driver: local
   mongo_primary_data:
     driver: local
   mongo_primary_config:
@@ -247,6 +594,8 @@ volumes:
     driver: local
   mongo_secondary2_config:
     driver: local
+  redis_data:
+    driver: local
 
 # ========================================
 # RED PARA EL CLUSTER
@@ -254,3 +603,11 @@ volumes:
 networks:
   mongo-cluster:
     driver: bridge
+  mantis_network:
+    driver: bridge
+  nextcloud_network:
+    driver: bridge
+  internal-network:
+    driver: bridge
+  
+  

@@ -1,0 +1,198 @@
+<div class="container mt-5 mb-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- Header del formulario -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0">
+            <i class="fas fa-bug me-2"></i>
+            Reportar Fallo o Contactar Soporte
+          </h2>
+        </div>
+        
+        <div class="card-body">
+          <!-- Mensaje de éxito -->
+          <div *ngIf="enviado" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>¡Reporte enviado con éxito!</strong> Nuestro equipo lo revisará pronto.
+            <button type="button" class="btn-close" (click)="enviado = false"></button>
+          </div>
+
+          <!-- Formulario -->
+          <form [formGroup]="contactoForm" (ngSubmit)="enviar()">
+            
+            <!-- Nombre -->
+            <div class="mb-3">
+              <label for="nombre" class="form-label">
+                <i class="fas fa-user me-1"></i>
+                Nombre completo <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="nombre" 
+                formControlName="nombre"
+                placeholder="Ingresa tu nombre completo"
+                [class.is-invalid]="contactoForm.get('nombre')?.invalid && contactoForm.get('nombre')?.touched">
+              <div class="invalid-feedback" *ngIf="contactoForm.get('nombre')?.invalid && contactoForm.get('nombre')?.touched">
+                El nombre es obligatorio
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">
+                <i class="fas fa-envelope me-1"></i>
+                Correo electrónico <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                formControlName="email"
+                placeholder="tu@email.com"
+                [class.is-invalid]="contactoForm.get('email')?.invalid && contactoForm.get('email')?.touched">
+              <div class="invalid-feedback" *ngIf="contactoForm.get('email')?.invalid && contactoForm.get('email')?.touched">
+                <span *ngIf="contactoForm.get('email')?.errors?.['required']">El email es obligatorio</span>
+                <span *ngIf="contactoForm.get('email')?.errors?.['email']">Ingresa un email válido</span>
+              </div>
+            </div>
+
+            <!-- Tipo de reporte -->
+            <div class="mb-3">
+              <label for="tipoReporte" class="form-label">
+                <i class="fas fa-list me-1"></i>
+                Tipo de reporte <span class="text-danger">*</span>
+              </label>
+              <select 
+                class="form-select" 
+                id="tipoReporte" 
+                formControlName="tipoReporte"
+                [class.is-invalid]="contactoForm.get('tipoReporte')?.invalid && contactoForm.get('tipoReporte')?.touched">
+                <option value="" selected disabled>Selecciona una opción</option>
+                <option value="bug">Error/Bug en el sistema</option>
+                <option value="mejora">Sugerencia de mejora</option>
+                <option value="consulta">Consulta general</option>
+                <option value="problema_pago">Problema con pagos</option>
+                <option value="problema_reserva">Problema con reservas</option>
+                <option value="otro">Otro</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="contactoForm.get('tipoReporte')?.invalid && contactoForm.get('tipoReporte')?.touched">
+                Selecciona un tipo de reporte
+              </div>
+            </div>
+
+            <!-- Prioridad -->
+            <div class="mb-3">
+              <label for="prioridad" class="form-label">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                Prioridad
+              </label>
+              <select class="form-select" id="prioridad" formControlName="prioridad">
+                <option value="baja">Baja - Puede esperar</option>
+                <option value="media" selected>Media - Normal</option>
+                <option value="alta">Alta - Requiere atención pronto</option>
+                <option value="urgente">Urgente - Bloquea el uso del sistema</option>
+              </select>
+            </div>
+
+            <!-- Resumen -->
+            <div class="mb-3">
+              <label for="resumen" class="form-label">
+                <i class="fas fa-heading me-1"></i>
+                Resumen del problema <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="resumen" 
+                formControlName="resumen"
+                placeholder="Describe brevemente el problema"
+                [class.is-invalid]="contactoForm.get('resumen')?.invalid && contactoForm.get('resumen')?.touched">
+              <div class="invalid-feedback" *ngIf="contactoForm.get('resumen')?.invalid && contactoForm.get('resumen')?.touched">
+                El resumen es obligatorio
+              </div>
+            </div>
+
+            <!-- Descripción detallada -->
+            <div class="mb-3">
+              <label for="mensaje" class="form-label">
+                <i class="fas fa-align-left me-1"></i>
+                Descripción detallada <span class="text-danger">*</span>
+              </label>
+              <textarea 
+                class="form-control" 
+                id="mensaje" 
+                rows="6" 
+                formControlName="mensaje"
+                placeholder="Describe el problema con el mayor detalle posible. Incluye los pasos para reproducir el error si aplica."
+                [class.is-invalid]="contactoForm.get('mensaje')?.invalid && contactoForm.get('mensaje')?.touched"></textarea>
+              <div class="invalid-feedback" *ngIf="contactoForm.get('mensaje')?.invalid && contactoForm.get('mensaje')?.touched">
+                La descripción es obligatoria
+              </div>
+              <small class="form-text text-muted">
+                Caracteres: {{ contactoForm.get('mensaje')?.value?.length || 0 }}
+              </small>
+            </div>
+
+            <!-- Pasos para reproducir (opcional) -->
+            <div class="mb-3">
+              <label for="pasosReproducir" class="form-label">
+                <i class="fas fa-list-ol me-1"></i>
+                Pasos para reproducir (opcional)
+              </label>
+              <textarea 
+                class="form-control" 
+                id="pasosReproducir" 
+                rows="4" 
+                formControlName="pasosReproducir"
+                placeholder="1. Ir a...&#10;2. Hacer clic en...&#10;3. Ver el error..."></textarea>
+              <small class="form-text text-muted">
+                Si es un bug, ayúdanos indicando cómo reproducirlo
+              </small>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button 
+                type="button" 
+                class="btn btn-secondary"
+                routerLink="/faq">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver a FAQ
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                [disabled]="contactoForm.invalid || enviando">
+                <span *ngIf="!enviando">
+                  <i class="fas fa-paper-plane me-2"></i>
+                  Enviar Reporte
+                </span>
+                <span *ngIf="enviando">
+                  <i class="fas fa-spinner fa-spin me-2"></i>
+                  Enviando...
+                </span>
+              </button>
+            </div>
+
+          </form>
+
+          <!-- Información adicional -->
+          <div class="mt-4 p-3 bg-light rounded">
+            <h6 class="text-primary">
+              <i class="fas fa-info-circle me-2"></i>
+              Información importante
+            </h6>
+            <ul class="mb-0 small">
+              <li>Todos los reportes serán revisados por nuestro equipo de soporte</li>
+              <li>Recibirás una respuesta a tu email en un plazo de 24-48 horas</li>
+              <li>Para bugs críticos, por favor incluye capturas de pantalla si es posible</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

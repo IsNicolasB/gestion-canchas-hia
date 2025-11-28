@@ -7,7 +7,8 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "swagger": "node swagger.js",
-    "seed": "node --max-old-space-size=4096 seed_clientes.js" 
+    "seed:clientes": "node --max-old-space-size=4096 seed_clientes.js",
+    "seed:reservas": "node --max-old-space-size=4096 seed_reservas.js"
 
   },
   "keywords": [],
@@ -30,6 +31,7 @@
     "mercadopago": "^2.7.0",
     "node-cron": "^4.2.0",
     "nodemailer": "^7.0.4",
+    "redis": "^4.7.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   }

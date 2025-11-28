@@ -101,6 +101,22 @@ export class RegistrarClienteComponent implements AfterViewInit {
     this.clientesService.createCliente(nuevoCliente).subscribe({
       next: () => {
         this.exito = true;
+        
+        // Enviar evento a Google Analytics
+        console.log('Intentando enviar evento a Google Analytics...');
+        console.log('gtag disponible:', typeof (window as any).gtag);
+        
+        if (typeof (window as any).gtag === 'function') {
+          (window as any).gtag('event', 'sign_up', {
+            method: 'Email',
+            event_category: 'engagement',
+            event_label: 'Registro Cliente'
+          });
+          console.log('Evento sign_up enviado a Google Analytics');
+        } else {
+          console.warn('Google Analytics (gtag) no está disponible');
+        }
+        
         setTimeout(() => this.router.navigate(['/login']), 2000);
       },
       error: (err) => {

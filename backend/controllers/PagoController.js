@@ -47,7 +47,28 @@ const obtenerPagos = async (req, res, next) => {
     }
   */
   try {
-    const pagos = await Pago.find();
+    const { estado, fechaInicio, fechaFin } = req.query;
+    
+    // PROTECCIÓN CRÍTICA: Evitar query masiva sin filtros
+    if (estado === 'pagado' && !fechaInicio) {
+      return res.status(400).json({
+        success: false,
+        message: 'Para consultar pagos con estado "pagado", debes especificar un rango de fechas (fechaInicio y fechaFin)'
+      });
+    }
+    
+    // Construir query con filtros
+    const query = {};
+    if (estado) query.estado = estado;
+    if (fechaInicio && fechaFin) {
+      query.fecha = { $gte: fechaInicio, $lte: fechaFin };
+    }
+    
+    // Optimización: .lean() y proyección de campos necesarios
+    const pagos = await Pago.find(query)
+      .select('importeTotal importePendiente estado fecha cliente cancha')
+      .lean();
+      
     res.status(200).json({
       success: true,
       message: 'Pagos recuperados exitosamente',
@@ -72,7 +93,8 @@ const obtenerPagoPorId = async (req, res, next) => {
     #swagger.responses[404] = { description: 'Pago no encontrado' }
   */
   try {
-    const pago = await Pago.findById(req.params.id);
+    // Optimización: .lean() para queries de solo lectura
+    const pago = await Pago.findById(req.params.id).lean();
     if (!pago) {
       return res.status(404).json({
         success: false,
@@ -378,7 +400,11 @@ const obtenerPagosPorCliente = async (req, res, next) => {
   */
   try {
     const { clienteId } = req.params;
-    const pagos = await Pago.find({ cliente: clienteId }).sort({ fecha: -1 });
+    // Optimización: .lean() y aprovecha índice idx_pagos_cliente_fecha
+    const pagos = await Pago.find({ cliente: clienteId })
+      .select('importeTotal importePendiente estado fecha cancha horaInicio horaFin')
+      .sort({ fecha: -1 })
+      .lean();
     res.status(200).json(pagos);
   } catch (error) {
     next(error);

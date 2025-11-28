@@ -1,5 +1,6 @@
 const Reserva = require('../models/Reserva');
 const Cliente = require('../models/Cliente');
+const { invalidateCache } = require('../middleware/cacheMiddleware');
 
 // Crear una nueva reserva (POST)
 const crearReserva = async (req, res, next) => {
@@ -21,6 +22,11 @@ const crearReserva = async (req, res, next) => {
   try {
     const nuevaReserva = new Reserva(req.body);
     const reservaGuardada = await nuevaReserva.save();
+    
+    // Invalidar caché relacionado con reservas y horarios
+    await invalidateCache('cache:/reservas*');
+    await invalidateCache('cache:/horarios*');
+    
     res.status(201).json({
       success: true,
       message: 'Reserva creada exitosamente',
@@ -43,19 +49,33 @@ const obtenerReservas = async (req, res, next) => {
     }
   */
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const reservas = await Reserva.find()
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('cliente')
-      .populate('pago');
-    res.status(200).json({
+      .populate('cliente')  // Poblar datos del cliente
+      .populate('cancha')   // Poblar datos de la cancha
+      .sort({ fecha: -1 })  // Ordenar por fecha descendente
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Reserva.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
       success: true,
-      message: 'Reservas recuperadas exitosamente',
-      count: reservas.length,
-      data: reservas
+      data: reservas,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages
+      }
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -72,11 +92,13 @@ const obtenerReservaPorId = async (req, res, next) => {
     #swagger.responses[404] = { description: 'Reserva no encontrada' }
   */
   try {
+    // Optimización: limitar populate a campos necesarios y usar .lean()
     const reserva = await Reserva.findById(req.params.id)
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('cliente')
-      .populate('pago');
+      .populate('horariosReservados', 'horaInicio horaFin estado')
+      .populate('cancha', 'nombre tipo ubicacion')
+      .populate('cliente', 'nombre apellido correo telefono')
+      .populate('pago', 'importeTotal importePendiente estado')
+      .lean();
     if (!reserva) {
       return res.status(404).json({
         success: false,
@@ -179,32 +201,27 @@ const obtenerReservasPorClienteYFecha = async (req, res, next) => {
       fecha = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
     }
 
+    // Optimización: Anclar regex para aprovechar índices
     const clientes = await Cliente.find({
       $or: [
-        { nombre: { $regex: nombre, $options: 'i' } },
-        { apellido: { $regex: nombre, $options: 'i' } },
-        { 
-          $expr: {
-            $regexMatch: {
-              input: { $concat: ["$nombre", " ", "$apellido"] },
-              regex: nombre,
-              options: 'i'
-            }
-          }
-        }
+        { nombre: { $regex: '^' + nombre, $options: 'i' } },
+        { apellido: { $regex: '^' + nombre, $options: 'i' } }
       ]
-    }).select('_id');
+    }).select('_id').lean();
 
     const clienteIds = clientes.map(c => c._id);
 
+    // Optimización: populate limitado y .lean()
     const reservas = await Reserva.find({
       fecha,
       cliente: { $in: clienteIds }
     })
     .populate('cliente', 'nombre apellido telefono')
-    .populate('cancha', 'nombre')
-    .populate('pago')
-    .sort({ horaInicio: 1 });
+    .populate('cancha', 'nombre tipo')
+    .populate('pago', 'importeTotal estado')
+    .select('fecha horaInicio horaFin cliente cancha pago')
+    .sort({ horaInicio: 1 })
+    .lean();
 
     res.status(200).json({
       success: true,
@@ -229,11 +246,14 @@ const obtenerReservasPorCliente = async (req, res, next) => {
   */
   try {
     const { clienteId } = req.params;
+    // Optimización: populate limitado, .lean() y aprovecha índice idx_reserva_cliente_fecha
     const reservas = await Reserva.find({ cliente: clienteId })
-      .populate('horariosReservados')
-      .populate('cancha')
-      .populate('pago')
-      .sort({ fecha: -1 });
+      .populate('horariosReservados', 'horaInicio horaFin')
+      .populate('cancha', 'nombre tipo')
+      .populate('pago', 'importeTotal estado')
+      .select('fecha horaInicio horaFin cancha pago horariosReservados')
+      .sort({ fecha: -1 })
+      .lean();
     res.status(200).json(reservas);
   } catch (error) {
     next(error);

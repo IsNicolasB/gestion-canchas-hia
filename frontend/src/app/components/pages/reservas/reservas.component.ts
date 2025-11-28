@@ -68,9 +68,45 @@ export class ReservasComponent implements OnInit, OnDestroy {
         if (resp.data && resp.data.estado === 'señado') {
           this.reservaConfirmada = true;
           clearInterval(this.pollingInterval);
+          
+          // Enviar evento de conversión a Google Analytics
+          this.enviarEventoConversionGA();
         }
       });
     }, 5000); // cada 5 segundos
+  }
+
+  enviarEventoConversionGA() {
+    const cantidadHorasNum = Number(this.cantidadHoras) || 1;
+    const valorReserva = this.cancha.precioPorHora * cantidadHorasNum;
+
+    if (typeof (window as any).gtag === 'function') {
+      // Evento de conversión con valor
+      (window as any).gtag('event', 'purchase', {
+        transaction_id: this.pago?._id || Date.now().toString(),
+        value: valorReserva,
+        currency: 'ARS', // Ajusta según tu moneda
+        items: [{
+          item_id: this.cancha._id,
+          item_name: this.cancha.nombre,
+          item_category: 'Reserva de Cancha',
+          price: this.cancha.precioPorHora,
+          quantity: cantidadHorasNum
+        }]
+      });
+
+      // Evento personalizado adicional para mejor seguimiento
+      (window as any).gtag('event', 'reserva_completada', {
+        event_category: 'conversion',
+        event_label: `Cancha: ${this.cancha.nombre}`,
+        value: valorReserva,
+        cancha_id: this.cancha._id,
+        fecha: this.fecha,
+        hora_inicio: this.hora,
+        hora_fin: this.horaFin,
+        cantidad_horas: cantidadHorasNum
+      });
+    }
   }
 
   sumarUnaHora(hora: string): string {
@@ -112,6 +148,9 @@ export class ReservasComponent implements OnInit, OnDestroy {
       numero: Math.floor(Math.random() * 1000000), // Simulación de número de reserva
       // Puedes agregar más datos si lo necesitas
     };
+    
+    // Enviar evento de conversión también en confirmación manual
+    this.enviarEventoConversionGA();
   }
 
   imprimirComprobante() {

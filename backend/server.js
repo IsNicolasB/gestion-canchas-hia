@@ -3,6 +3,7 @@ require('./cron/enviarRecordatorioNodeMailer');
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/database'); // ✅ Importar correctamente
+const { connectRedis, disconnectRedis } = require('./config/redis'); // ✅ Redis
 //const errorHandler = require('./middleware/errorHandler');
 
 // Swagger
@@ -116,7 +117,27 @@ app.use('*', (req, res) => {
 });
 
 // Iniciar el servidor
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
   console.log(`📊 Entorno: ${process.env.NODE_ENV}`);
+  
+  // Conectar a Redis (no bloqueante, continúa sin caché si falla)
+  try {
+    await connectRedis();
+  } catch (error) {
+    console.warn('⚠️ Redis no disponible, la aplicación continuará sin caché');
+  }
+});
+
+// Manejar cierre graceful
+process.on('SIGTERM', async () => {
+  console.log('🛑 SIGTERM recibido, cerrando servidor...');
+  await disconnectRedis();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('🛑 SIGINT recibido, cerrando servidor...');
+  await disconnectRedis();
+  process.exit(0);
 });
